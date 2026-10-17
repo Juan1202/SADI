@@ -151,7 +151,7 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: '0'
-      - name: Trivy — imagen (compuerta: CRITICAL con parche disponible)
+      - name: 'Trivy — imagen (compuerta: CRITICAL con parche disponible)'
         uses: aquasecurity/trivy-action@v0.35.0
         with:
           version: v0.69.3
