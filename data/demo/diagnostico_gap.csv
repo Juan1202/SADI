@@ -1,0 +1,45 @@
+﻿diagnostico;fecha;clausula;nombre_clausula;requisito;valor;observacion;origen
+D1;2026-03-09;4;Contexto de la Organización;4.1;cumple;Se identificaron cuestiones internas y externas en el acta del comité del 26/02/2026, pero el análisis no se ha revisado desde entonces.;EXCEL:28,29
+D1;2026-03-09;4;Contexto de la Organización;4.2;cumple;Matriz de partes interesadas vigente. Faltan los requisitos reglamentarios de la Superintendencia de Industria y Comercio asociados a la Ley 1581.;EXCEL:30-34
+D1;2026-03-09;4;Contexto de la Organización;4.3;cumple;Alcance documentado en el acta ACT-SGSI-001: sede principal, bodega y servicios de TI tercerizados. Aprobado por la gerencia.;EXCEL:35-37
+D1;2026-03-09;4;Contexto de la Organización;4.4;cumple;El SGSI existe como iniciativa pero no hay evidencia de mantenimiento periódico. La dirección desconoce la Política Nacional de Seguridad Digital.;EXCEL:24,25,26,27
+D1;2026-03-09;5;Liderazgo;5.1;cumple;La gerencia asiste al comité y aprueba el presupuesto, pero no asegura los recursos comprometidos para el SGSI.;EXCEL:38-43
+D1;2026-03-09;5;Liderazgo;5.2;parcial;Existe un borrador de política sin aprobación formal ni fecha de revisión. No esta publicada en un medio accesible a todo el personal.;EXCEL:44-48
+D1;2026-03-09;5;Liderazgo;5.3;parcial;Los roles están definidos en el documento de cargos, pero no se comunicaron al personal ni se asignaron autoridades para reportar el desempeño del SGSI.;EXCEL:49-51
+D1;2026-03-09;6;Planificación;6.1.2;no_cumple;No existe metodología de apreciación de riesgos. No se identifican riesgos de confidencialidad, integridad y disponibilidad, ni se determinan niveles ni criterios.;EXCEL:57-64
+D1;2026-03-09;6;Planificación;6.1.3;parcial;Hay un proceso informal de tratamiento y un plan formulado, pero no se elaboro la Declaración de Aplicabilidad ni se aceptaron los riesgos residuales.;EXCEL:65-73
+D1;2026-03-09;6;Planificación;6.2;parcial;Los objetivos se comunican en la reunión anual pero no son cuantificables ni están documentados.;EXCEL:74-77
+D1;2026-03-09;7;Apoyo;7.1;no_cumple;No hay asignación presupuestal específica para el SGSI en la vigencia 2026.;EXCEL:41,78
+D1;2026-03-09;7;Apoyo;7.2;parcial;El personal es competente por experiencia, pero no se definieron las competencias requeridas ni se conservan evidencias completas.;EXCEL:79,80,82
+D1;2026-03-09;7;Apoyo;7.3;parcial;Se comunica la importancia del SGSI en la inducción. No hay campaña de concienciación periódica ni acciones para aumentar competencias.;EXCEL:42,43,81
+D1;2026-03-09;7;Apoyo;7.5;parcial;La información documentada existe pero no está identificada, revisada ni aprobada bajo control de cambios.;EXCEL:83,84,85
+D1;2026-03-09;8;Operación;8.1;cumple;Los procesos operativos están planificados y documentados, con control de cambios planificados y no previstos, y control de procesos subcontratados.;EXCEL:86-90
+D1;2026-03-09;8;Operación;8.2;cumple;Se realizan apreciaciones de riesgo ante cambios significativos y quedan documentadas.;EXCEL:91
+D1;2026-03-09;8;Operación;8.3;parcial;El plan de tratamiento se implementa, pero no se conserva información documentada de sus resultados.;EXCEL:92,93
+D1;2026-03-09;9;Evaluación del Desempeño;9.1;cumple;Se evalúa el desempeño y la eficacia del SGSI, aunque no se definió formalmente que medir, cuando ni con que método.;EXCEL:94-97
+D1;2026-03-09;9;Evaluación del Desempeño;9.2;cumple;Programa de auditoría interna vigente, con criterios, alcance, auditores imparciales e informes conservados.;EXCEL:98-104
+D1;2026-03-09;9;Evaluación del Desempeño;9.3;no_aplica;NO APLICA en este primer diagnóstico: el SGSI no ha completado el intervalo planificado para la primera revisión por la dirección. Se evaluará en el siguiente diagnóstico. (Decisión del caso de demostración, sirve para mostrar que el cálculo excluye no_aplica.);GENERADO
+D1;2026-03-09;10;Mejora;10.1;no_evaluado;NO EVALUADO: pendiente la entrevista con el responsable de mejora continua. (Decisión del caso de demostración.);GENERADO
+D1;2026-03-09;10;Mejora;10.2;no_cumple;No hay procedimiento de no conformidades. No se determinan causas ni se evaluan acciones para evitar recurrencia.;EXCEL:108-111
+D2;2026-09-14;4;Contexto de la Organización;4.1;cumple;Se identificaron cuestiones internas y externas en el acta del comité del 26/02/2026, pero el análisis no se ha revisado desde entonces.;EXCEL:28,29
+D2;2026-09-14;4;Contexto de la Organización;4.2;cumple;Matriz de partes interesadas vigente. Faltan los requisitos reglamentarios de la Superintendencia de Industria y Comercio asociados a la Ley 1581.;EXCEL:30-34
+D2;2026-09-14;4;Contexto de la Organización;4.3;cumple;Alcance documentado en el acta ACT-SGSI-001: sede principal, bodega y servicios de TI tercerizados. Aprobado por la gerencia.;EXCEL:35-37
+D2;2026-09-14;4;Contexto de la Organización;4.4;cumple;El SGSI existe como iniciativa pero no hay evidencia de mantenimiento periódico. La dirección desconoce la Política Nacional de Seguridad Digital.;EXCEL:24,25,26,27
+D2;2026-09-14;5;Liderazgo;5.1;cumple;La gerencia asiste al comité y aprueba el presupuesto, pero no asegura los recursos comprometidos para el SGSI.;EXCEL:38-43
+D2;2026-09-14;5;Liderazgo;5.2;cumple;Política POL-SGSI-001 v2.0 aprobada por la gerencia el 24/06/2026, publicada en la intranet y socializada. Cierra el plan del control 5.1.;GENERADO
+D2;2026-09-14;5;Liderazgo;5.3;cumple;Roles y responsabilidades comunicados mediante circular interna y aceptados por firma. Cierra el plan del control 5.2.;GENERADO
+D2;2026-09-14;6;Planificación;6.1.2;parcial;Se adoptó la metodología de apreciación de riesgos de SADI (matriz 5x5 de ISO/IEC 27005). Falta definir formalmente los criterios de aceptación del riesgo residual.;GENERADO
+D2;2026-09-14;6;Planificación;6.1.3;cumple;Declaración de Aplicabilidad elaborada en SADI para los cuatro dominios, con justificación por control y tres exclusiones documentadas.;GENERADO
+D2;2026-09-14;6;Planificación;6.2;parcial;Los objetivos se comunican en la reunión anual pero no son cuantificables ni están documentados.;EXCEL:74-77
+D2;2026-09-14;7;Apoyo;7.1;parcial;La gerencia asignó presupuesto para el segundo semestre de 2026. Aún no cubre la vigencia completa.;GENERADO
+D2;2026-09-14;7;Apoyo;7.2;parcial;El personal es competente por experiencia, pero no se definieron las competencias requeridas ni se conservan evidencias completas.;EXCEL:79,80,82
+D2;2026-09-14;7;Apoyo;7.3;cumple;Campaña de concienciación ejecutada en julio de 2026 con 44 de 48 asistentes y evaluación posterior. Cierra el plan del control 6.3.;GENERADO
+D2;2026-09-14;7;Apoyo;7.5;parcial;La información documentada existe pero no está identificada, revisada ni aprobada bajo control de cambios.;EXCEL:83,84,85
+D2;2026-09-14;8;Operación;8.1;cumple;Los procesos operativos están planificados y documentados, con control de cambios planificados y no previstos, y control de procesos subcontratados.;EXCEL:86-90
+D2;2026-09-14;8;Operación;8.2;cumple;Se realizan apreciaciones de riesgo ante cambios significativos y quedan documentadas.;EXCEL:91
+D2;2026-09-14;8;Operación;8.3;cumple;Los resultados del tratamiento quedan documentados en SADI: 18 planes con estado, responsable, plazo y acciones verificadas.;GENERADO
+D2;2026-09-14;9;Evaluación del Desempeño;9.1;cumple;Se evalúa el desempeño y la eficacia del SGSI, aunque no se definió formalmente que medir, cuando ni con que método.;EXCEL:94-97
+D2;2026-09-14;9;Evaluación del Desempeño;9.2;cumple;Programa de auditoría interna vigente, con criterios, alcance, auditores imparciales e informes conservados.;EXCEL:98-104
+D2;2026-09-14;9;Evaluación del Desempeño;9.3;cumple;Primera revisión por la dirección realizada el 31/08/2026, con acta y decisiones sobre recursos y objetivos. Ya no aplica la exclusión del primer diagnóstico.;GENERADO
+D2;2026-09-14;10;Mejora;10.1;cumple;La mejora continua se evidencia en el cierre de 11 planes de tratamiento y en la mejora del puntaje GAP entre marzo y septiembre de 2026.;GENERADO
+D2;2026-09-14;10;Mejora;10.2;parcial;Procedimiento de no conformidades y acciones correctivas en versión borrador, pendiente de aprobación.;GENERADO

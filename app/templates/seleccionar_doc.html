@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container pt-5">
+    <div class="text-center mb-5">
+        <h2 style="color: var(--accent-color); font-weight: 800;">Generador Documental</h2>
+        <p class="text-muted">Seleccione el tipo de documento que desea crear</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-5 mb-4">
+            <div class="card h-100 bg-surface border-neon text-center p-4 doc-card-select" onclick="window.location.href='{{ url_for('documentos.crear_politica') }}'" style="cursor: pointer; border: 1px solid var(--border-color); border-radius: 15px; transition: 0.3s;">
+                <div class="card-body">
+                    <div class="mb-3" style="font-size: 3rem; color: #ab47bc;"><i class="fas fa-gavel"></i></div>
+                    <h4 class="text-main font-weight-bold">Generar Política</h4>
+                    <p class="text-muted small">Cree políticas de seguridad formales (Ej: Política de Accesos, Política General).</p>
+                    <button class="btn btn-outline-primary mt-3">Crear Política</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 mb-4">
+    <div class="card h-100 bg-surface text-center p-4 doc-card-select" 
+         onclick="window.location.href='{{ url_for('documentos.crear_politica', tipo='Procedimiento') }}'" 
+         style="cursor: pointer; border: 1px solid var(--border-color); border-radius: 15px; transition: 0.3s;">
+        <div class="card-body">
+            <div class="mb-3" style="font-size: 3rem; color: #4f46e5;"><i class="fas fa-tasks"></i></div>
+            <h4 class="text-main font-weight-bold">Generar Procedimiento</h4>
+            <p class="text-muted small">Defina el paso a paso operativo (Guías, Manuales, Instructivos).</p>
+            <button class="btn btn-outline-success mt-3">Crear Procedimiento</button>
+        </div>
+    </div>
+</div>
+
+<div class="card ... doc-card-select" onclick="window.location.href='{{ url_for('documentos.crear_politica', tipo='Política') }}'" ...>
+    </div>
+
+
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('documentos.vista_documentos') }}" class="text-muted"><i class="fas fa-arrow-left mr-2"></i>Volver a Documentos</a>
+    </div>
+</div>
+
+<style>
+    .doc-card-select:hover { transform: translateY(-5px); border-color: var(--accent-color) !important; box-shadow: 0 0 20px rgba(99,102,241,0.1); }
+</style>
+{% endblock %}
+

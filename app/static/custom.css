@@ -1,0 +1,473 @@
+:root {
+    --sadi-indigo: #6366f1;
+    --dark-bg: #0a0a14;
+    --panel-dark: #13132a;
+}
+
+.cyber-viewport {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--dark-bg);
+}
+
+.cyber-main-card {
+    display: flex;
+    width: 900px;
+    height: 520px;
+    background: var(--panel-dark);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+}
+
+/* LADO IZQUIERDO */
+.cyber-panel-left {
+    width: 45%;
+    background-color: var(--sadi-indigo);
+    padding: 50px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.scanning-bar {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 6px;
+    background: rgba(255,255,255,0.7);
+    box-shadow: 0 0 15px #fff;
+    animation: scanAnimation 4s linear infinite;
+}
+
+@keyframes scanAnimation {
+    0% { top: 0; }
+    50% { top: 100%; }
+    100% { top: 0; }
+}
+
+.main-title {
+    color: #000;
+    font-weight: 900;
+    font-size: 1.8rem;
+    line-height: 1.1;
+}
+
+.iso-tag {
+    color: #000;
+    font-weight: bold;
+    margin-top: 15px;
+    opacity: 0.7;
+}
+
+/* LADO DERECHO */
+.cyber-panel-right {
+    width: 55%;
+    background-color: var(--panel-dark);
+    /* Cuadrícula técnica */
+    background-image:
+        linear-gradient(rgba(48, 54, 61, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(48, 54, 61, 0.2) 1px, transparent 1px);
+    background-size: 25px 25px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* LOGO CON EFECTO DE ADENTRO HACIA AFUERA */
+.logo-wrapper {
+    text-align: left;
+}
+
+.cyber-logo-interactive {
+    max-width: 150px;
+    height: auto;
+    filter: brightness(0) invert(1) drop-shadow(0 0 5px var(--sadi-indigo));
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                filter 0.4s ease;
+    cursor: pointer;
+}
+
+.cyber-logo-interactive:hover {
+    transform: scale(1.15);
+    filter: brightness(0) invert(1) drop-shadow(0 0 15px var(--sadi-indigo));
+}
+/* ACCIONES */
+.welcome-text {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 5px;
+    font-size: 2.2rem;
+}
+
+.accent-line {
+    width: 50px;
+    height: 4px;
+    background: var(--sadi-indigo);
+    margin-bottom: 20px;
+}
+
+.user-highlight {
+    color: var(--sadi-indigo);
+    font-weight: bold;
+}
+
+.btn-audit {
+    display: block;
+    background: var(--sadi-indigo);
+    color: #fff !important;
+    text-align: center;
+    padding: 15px;
+    font-weight: 800;
+    border-radius: 6px;
+    text-decoration: none !important;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn-audit:hover {
+    background: #fff;
+    box-shadow: 0 0 25px var(--sadi-indigo);
+    transform: translateY(-2px);
+}
+
+.right-footer {
+    color: #8b949e;
+    font-size: 0.75rem;
+    text-align: left;
+}
+/* --- LOGIN CARD MODERNIZADA --- */
+.login-card-modern {
+    width: 420px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.1);
+    background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 80%);
+    overflow: hidden;
+}
+
+.login-header-tech {
+    padding: 30px;
+    background: #0a0a14;
+    text-align: center;
+    border-bottom: 1px solid #30363d;
+}
+
+.cyber-logo-login {
+    max-width: 130px;
+    filter: brightness(0) invert(1) drop-shadow(0 0 10px var(--sadi-indigo));
+    transition: transform 0.5s ease;
+}
+
+.cyber-logo-login:hover {
+    transform: scale(1.1);
+}
+
+.system-badge {
+    color: var(--sadi-indigo);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    margin-top: 15px;
+}
+/* Cuando el usuario no está autenticado, el contenido ocupa el 100% */
+.login-full-page {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0a0a14;
+}
+
+/* Si el sidebar está presente, el contenido se desplaza */
+.content-wrapper {
+    margin-left: 250px;
+    transition: margin 0.3s;
+}
+
+/* --- CAMPOS DE ENTRADA MEJORADOS --- */
+.login-body-tech {
+    padding: 35px;
+}
+
+.access-label {
+    color: #8b949e;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.input-field-cyber {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.input-field-cyber i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sadi-indigo);
+    font-size: 1.1rem;
+    z-index: 2;
+}
+
+/* IMPORTANTE: Esto quita el fondo blanco de los inputs */
+.input-field-cyber input {
+    width: 100%;
+    padding: 14px 15px 14px 45px;
+    background: #0a0a14 !important;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.input-field-cyber input:focus {
+    border-color: var(--sadi-indigo);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    outline: none;
+    background: #12181f !important;
+}
+
+/* --- BOTÓN DE AUTENTICACIÓN --- */
+.btn-login-tech {
+    width: 100%;
+    padding: 15px;
+    background: var(--sadi-indigo);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: 0.4s;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+}
+
+.btn-login-tech:hover {
+    background: #ffffff;
+    box-shadow: 0 0 25px var(--sadi-indigo);
+    transform: translateY(-2px);
+}
+
+.login-footer-tech {
+    padding: 15px;
+    text-align: center;
+    background: #0a0a14;
+    color: #484f58;
+    border-top: 1px solid #30363d;
+}
+/* --- TARJETA DE FORMULARIO CYBER --- */
+.cyber-form-card {
+    width: 100%;
+    max-width: 600px;
+    background-color: var(--panel-gray);
+    background-image:
+        linear-gradient(rgba(48, 54, 61, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(48, 54, 61, 0.2) 1px, transparent 1px);
+    background-size: 30px 30px;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+.form-header-cyber {
+    background: #0a0a14;
+    padding: 25px;
+    text-align: center;
+    border-bottom: 1px solid #30363d;
+}
+
+.header-icon {
+    font-size: 2rem;
+    color: var(--sadi-indigo);
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+}
+
+.form-body-cyber {
+    padding: 40px;
+}
+
+/* --- ESTILO DE INPUTS (ADIÓS AL FONDO BLANCO) --- */
+.cyber-label {
+    color: var(--sadi-indigo);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #484f58;
+}
+
+.cyber-input {
+    width: 100%;
+    padding: 15px 15px 15px 45px;
+    background: #0a0a14 !important;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #fff !important;
+    transition: 0.3s;
+}
+
+.cyber-input:focus {
+    border-color: var(--sadi-indigo);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    outline: none;
+}
+
+/* --- BOTONES --- */
+.btn-generate-cyber {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--sadi-indigo);
+    color: #fff;
+    font-weight: 900;
+    border: none;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.btn-generate-cyber:hover {
+    background-color: #fff;
+    box-shadow: 0 0 25px var(--sadi-indigo);
+    transform: translateY(-2px);
+}
+
+.btn-cancel-cyber {
+    display: block;
+    text-align: center;
+    color: #f85149;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: bold;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.btn-cancel-cyber:hover {
+    opacity: 1;
+    color: #f85149;
+}
+
+.pagination {
+    gap: 8px;
+    align-items: center;
+}
+
+.page-item .page-link {
+    border-radius: 12px !important;
+    border: 2px solid #333;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    font-weight: bold;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Efecto Hover */
+.page-item .page-link:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+}
+
+/* Estado ACTIVO */
+.page-item.active .page-link {
+    background-color: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+}
+
+/* Flechas de Navegación */
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 6px 14px;
+    background-color: #252525;
+}
+
+/* Flechas Hover */
+.page-item:first-child .page-link:hover,
+.page-item:last-child .page-link:hover {
+    background-color: #6366f1;
+    color: #fff;
+}
+
+/* Estado Deshabilitado */
+.page-item.disabled .page-link {
+    background-color: #151515;
+    border-color: #222;
+    color: #444;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Estilos para Tarjetas de Dominio */
+.domain-card {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.domain-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-color: #6366f1;
+}
+
+.domain-card .icon-box {
+    transition: transform 0.3s;
+}
+
+.domain-card:hover .icon-box {
+    transform: scale(1.1);
+}
+
+/* Estado ACTIVO */
+.active-domain {
+    background: linear-gradient(145deg, #1f1f1f, #252525);
+    border: 1px solid #6366f1;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+}
+
+.active-domain::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #6366f1;
+}

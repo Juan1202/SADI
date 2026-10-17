@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       PERFIL DE USUARIO (ESTILO NEON/CYBER)
+       ========================================= */
+    
+    .profile-header {
+        display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+    }
+
+    /* Tarjetas */
+    .profile-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    /* Avatar Grande */
+    .avatar-large {
+        width: 80px; height: 80px;
+        background-color: rgba(99, 102, 241, 0.1);
+        color: var(--accent-color);
+        font-size: 2.5rem; font-weight: 700;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--accent-color);
+        margin-bottom: 20px;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Formulario */
+    .form-label-profile {
+        font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+    }
+    
+    .input-profile {
+        background-color: var(--bg-body) !important;
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        border-radius: 6px; padding: 10px; width: 100%;
+    }
+    .input-profile:focus {
+        border-color: var(--accent-color); box-shadow: 0 0 5px rgba(99, 102, 241, 0.3); outline: none;
+    }
+    .input-profile:disabled {
+        opacity: 0.6; cursor: not-allowed; border-style: dashed;
+    }
+
+    /* Tabla Historial Estilizada */
+    .history-table thead th {
+        background-color: rgba(99, 102, 241, 0.05); 
+        color: var(--accent-color);
+        font-size: 0.85rem; text-transform: uppercase; padding: 12px; border-bottom: 2px solid var(--accent-color);
+        border-top: none;
+    }
+    .history-table td {
+        padding: 12px; font-size: 0.95rem; color: var(--text-main);
+        border-bottom: 1px solid var(--border-color); vertical-align: middle;
+    }
+    .history-table tbody tr:hover {
+        background-color: var(--bg-hover);
+    }
+    
+    /* Botón Guardar */
+    .btn-save-profile {
+        background-color: var(--accent-color); color: #000; border: none;
+        padding: 12px 20px; border-radius: 6px; font-weight: 800; width: 100%;
+        transition: all 0.2s; letter-spacing: 1px;
+    }
+    .btn-save-profile:hover {
+        background-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3); color: #000;
+    }
+    /* ... tus estilos anteriores ... */
+
+    
+
+    /* === NUEVA CLASE PARA CENTRADO PERFECTO DEL OJO === */
+    .btn-view-centered {
+        /* 1. Flexbox estricto (la clave del éxito) */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        
+        /* 2. Tamaño fijo y sin relleno */
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+        border-radius: 50%;
+        
+        /* 3. Estilos visuales (imitando btn-outline-info) */
+        color: #17a2b8; /* Color info de Bootstrap */
+        border: 1px solid #17a2b8;
+        background: transparent;
+        transition: all 0.2s;
+        text-decoration: none !important;
+    }
+    
+    .btn-view-centered:hover {
+        background-color: #17a2b8;
+        color: white;
+        box-shadow: 0 0 10px rgba(23, 162, 184, 0.5);
+    }
+
+    /* Asegurar que el icono no tenga márgenes propios */
+    .btn-view-centered i {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block;
+        line-height: 1 !important;
+    }
+</style>
+</style>
+
+<div class="container mt-4 mb-5">
+    
+    <div class="profile-header">
+        <h2 class="fw-bold m-0" style="color: var(--text-main);"><i class="fas fa-id-card-alt mr-2" style="color: var(--accent-color);"></i> Perfil de Usuario</h2>
+        <a href="{{ url_for('usuarios.gestion_usuarios') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left mr-1"></i> Volver a la lista
+        </a>
+    </div>
+
+    <div class="row">
+        
+        <div class="col-md-4 mb-4">
+            <div class="profile-card">
+                <div class="text-center">
+                    <div class="d-flex justify-content-center">
+                        <div class="avatar-large">
+                            {{ usuario.username[0]|upper }}
+                        </div>
+                    </div>
+                    <h3 class="fw-bold" style="color: var(--text-main);">{{ usuario.username }}</h3>
+                    <div class="badge bg-secondary mb-4">{{ usuario.role }}</div>
+                </div>
+
+                <form action="{{ url_for('usuarios.guardar_edicion_usuario', id=usuario.id) }}" method="POST">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label-profile">Usuario (ID: {{ usuario.id }})</label>
+                        <input type="text" id="username" class="input-profile" value="{{ usuario.username }}" disabled>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label-profile">Correo Electrónico</label>
+                        <input type="email" id="email" name="email" class="input-profile" value="{{ usuario.email or '' }}" placeholder="usuario@empresa.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cargo" class="form-label-profile">Cargo</label>
+                        <input type="text" id="cargo" name="cargo" class="input-profile" value="{{ usuario.cargo or '' }}" placeholder="Ej: Auditor Senior">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label-profile">Rol de Sistema</label>
+                        <select name="role" id="role" class="input-profile">
+                            <option value="lector"        {% if usuario.role == 'lector' %}selected{% endif %}>Lector (Solo lectura)</option>
+                            <option value="consultor"     {% if usuario.role == 'consultor' %}selected{% endif %}>Consultor</option>
+                            <option value="auditor"       {% if usuario.role == 'auditor' %}selected{% endif %}>Auditor</option>
+                            <option value="administrador" {% if usuario.role == 'administrador' %}selected{% endif %}>Administrador (Total)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label-profile text-warning"><i class="fas fa-key mr-1"></i> Cambiar Contraseña</label>
+                        <input type="password" id="password" name="password" class="input-profile" placeholder="Dejar vacío para mantener la actual">
+                    </div>
+
+                    <button type="submit" class="btn-save-profile">
+                        <i class="fas fa-save mr-2"></i> GUARDAR CAMBIOS
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="profile-card">
+                <h4 class="fw-bold mb-4 border-bottom pb-3" style="color: var(--text-main);">
+                    <i class="fas fa-history mr-2" style="color: var(--text-muted);"></i> Historial de Auditorías
+                </h4>
+
+                {% if auditorias %}
+                    <div class="table-responsive">
+                        <table class="table history-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>CÓDIGO</th>
+                                    <th>TÍTULO</th>
+                                    <th>FECHA</th>
+                                    <th>ESTADO</th>
+                                    <th>SCORE</th>
+                                    <th class="text-center">VER</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aud in auditorias %}
+                                <tr>
+                                    <td>
+                                        <span class="badge" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-main);">
+                                            {{ aud.codigo }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold">{{ aud.titulo }}</td>
+                                    <td>{{ aud.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <span class="badge {% if aud.estado == 'Finalizada' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                            {{ aud.estado }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if aud.score_promedio > 3.26 %}
+                                            <span class="text-success fw-bold">{{ "%.2f"|format(aud.score_promedio) }} / 5</span>
+                                        {% elif aud.score_promedio >= 1.66 %}
+                                            <span class="text-warning fw-bold">{{ "%.2f"|format(aud.score_promedio) }} / 5</span>
+                                        {% else %}
+                                            <span class="text-danger fw-bold">{{ "%.2f"|format(aud.score_promedio) }} / 5</span>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <td class="text-center">
+    <a href="{{ url_for('auditoria.ver_evaluacion', id=aud.id) }}" 
+       class="btn-view-centered" 
+       title="Ver detalle">
+        <i class="fas fa-eye"></i>
+    </a>
+</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <div style="opacity: 0.3; margin-bottom: 15px;">
+                            <i class="fas fa-folder-open fa-4x"></i>
+                        </div>
+                        <p class="mb-0">Este usuario aún no ha realizado ninguna auditoría.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Historial de Actividad -->
+    <div class="profile-card mt-4">
+        <h4 class="fw-bold mb-4 border-bottom pb-3" style="color: var(--text-main);">
+            <i class="fas fa-stream mr-2" style="color: var(--accent-color);"></i> Registro de Actividad
+        </h4>
+        {% if actividades.items %}
+            <div class="table-responsive">
+                <table class="table history-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>MÓDULO</th>
+                            <th>ACCIÓN</th>
+                            <th>DETALLE</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in actividades.items %}
+                        <tr>
+                            <td class="text-nowrap" style="font-size:0.82rem; color:var(--text-muted);">
+                                {{ reg.fecha.strftime('%d/%m/%Y %H:%M') }}
+                            </td>
+                            <td>
+                                <span class="badge" style="background:rgba(99,102,241,0.1); border:1px solid var(--accent-color); color:var(--accent-color); font-size:0.75rem;">
+                                    {{ reg.modulo }}
+                                </span>
+                            </td>
+                            <td class="fw-bold" style="font-size:0.9rem;">{{ reg.accion }}</td>
+                            <td style="font-size:0.85rem; color:var(--text-muted);">{{ reg.detalle or '—' }}</td>
+                            <td style="font-size:0.8rem; color:var(--text-muted);">{{ reg.ip_address or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Paginación -->
+            {% if actividades.pages > 1 %}
+            <nav class="mt-3">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if actividades.has_prev %}
+                        <li class="page-item"><a class="page-link" href="?page={{ actividades.prev_num }}">‹</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">{{ actividades.page }} / {{ actividades.pages }}</span></li>
+                    {% if actividades.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ actividades.next_num }}">›</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-history fa-3x mb-3" style="opacity:0.2;"></i>
+                <p class="mb-0">Sin actividad registrada para este usuario.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

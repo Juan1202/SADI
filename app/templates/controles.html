@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* =========================================
+       ESTILOS ADAPTATIVOS LOCALES
+       ========================================= */
+
+    /* 1. Tarjetas de Dominio */
+    .domain-card {
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        height: 100%;
+    }
+    .domain-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        border-color: var(--accent-color);
+    }
+    .domain-card.active-domain {
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+    
+    /* Enlace principal */
+    .domain-link {
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .domain-link:hover { text-decoration: none; color: inherit; }
+
+    .domain-title { color: var(--text-main); font-weight: 700; margin-top: 10px; }
+    .domain-text { color: var(--text-muted); }
+
+    /* Botón de Info (EXTERNO A LA TARJETA) */
+    .btn-domain-info-external {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        width: 100%;
+        font-size: 0.85rem;
+        padding: 8px;
+        margin-top: 5px;
+        transition: all 0.2s;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+    .btn-domain-info-external:hover {
+        background-color: var(--bg-hover);
+        color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+
+    /* 2. Tarjetas de Información Desplegada (DETALLADA) */
+    .info-collapse-card {
+        background-color: var(--bg-surface);
+        border-left: 5px solid var(--accent-color);
+        border-radius: 8px;
+        padding: 25px; 
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        color: var(--text-main);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .info-list { padding-left: 10px; }
+    .info-list li { margin-bottom: 8px; color: var(--text-muted); font-size: 0.95rem; display: flex; align-items: flex-start; }
+    .info-list i { color: var(--accent-color); margin-right: 10px; margin-top: 4px; }
+    .info-description p { line-height: 1.6; color: var(--text-muted); }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 3. Estilos Generales */
+    .card-custom {
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-main) !important;
+    }
+    
+    /* Buscador Integrado */
+    .input-group-text-custom {
+        background-color: var(--bg-body);
+        border: 1px solid var(--border-color);
+        border-right: none;
+        color: var(--text-muted);
+    }
+    .input-search-custom {
+        background-color: var(--bg-body) !important;
+        border: 1px solid var(--border-color);
+        border-left: none;
+        color: var(--text-main) !important;
+    }
+    .input-search-custom:focus {
+        border-color: var(--accent-color);
+        box-shadow: none;
+    }
+
+    /* ==========================================================
+       4. BOTONES DE ACCIÓN (MEJORADOS - CYBER STYLE)
+       ========================================================== */
+    .btn-action-icon {
+        width: 36px; 
+        height: 36px;
+        padding: 0 !important; /* Forzar 0 padding para centrar */
+        
+        display: inline-flex !important; /* Flexbox es rey para centrar */
+        align-items: center !important;
+        justify-content: center !important;
+        
+        border-radius: 8px; 
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto rebote suave */
+        border: 1px solid transparent;
+        background: rgba(255, 255, 255, 0.03); /* Fondo sutil */
+        margin: 0 4px;
+    }
+
+    /* Reset estricto para los iconos dentro de los botones */
+    .btn-action-icon i {
+        line-height: 1 !important; /* Elimina altura de línea heredada */
+        font-size: 1rem;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* --- ESTILO EDITAR (CYBER BLUE) --- */
+    .btn-edit {
+        color: #00d2ff; /* Azul Neon */
+        border-color: rgba(0, 210, 255, 0.3);
+    }
+    .btn-edit:hover {
+        background-color: #00d2ff;
+        color: #000; /* Texto negro para contraste */
+        border-color: #00d2ff;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); /* Glow azul */
+        transform: translateY(-2px);
+    }
+
+    /* --- ESTILO ELIMINAR (CYBER PINK/RED) --- */
+    .btn-delete {
+        color: #ff2a6d; /* Rosa/Rojo Neon */
+        border-color: rgba(255, 42, 109, 0.3);
+    }
+    .btn-delete:hover {
+        background-color: #ff2a6d;
+        color: #fff; /* Texto blanco */
+        border-color: #ff2a6d;
+        box-shadow: 0 0 15px rgba(255, 42, 109, 0.5); /* Glow rojo */
+        transform: translateY(-2px) rotate(5deg); /* Pequeña rotación dramática */
+    }
+
+    /* --- MODO LIGHT (ADAPTACIÓN DE CONTRASTE) --- */
+    body.light-mode .btn-edit { 
+        color: #008cb3; 
+        border-color: #008cb3; 
+        background: rgba(0, 140, 179, 0.05);
+    }
+    body.light-mode .btn-edit:hover { 
+        background-color: #008cb3; 
+        color: #fff; 
+    }
+
+    body.light-mode .btn-delete { 
+        color: #d61c4e; 
+        border-color: #d61c4e; 
+        background: rgba(214, 28, 78, 0.05);
+    }
+    body.light-mode .btn-delete:hover { 
+        background-color: #d61c4e; 
+        color: #fff; 
+    }
+
+    /* ========================================================== */
+
+    .description-row { background-color: var(--bg-hover) !important; color: var(--text-main); }
+    .description-content { border-left: 4px solid var(--accent-color); padding: 20px; }
+    .modal-content-custom { background-color: var(--bg-surface); color: var(--text-main); border: 1px solid var(--accent-color); }
+    .modal-header-custom { border-bottom: 1px solid var(--border-color); }
+    .modal-footer-custom { border-top: 1px solid var(--border-color); }
+    .neon-highlight { background-color: rgba(99, 102, 241, 0.3); color: #008f6c; padding: 2px 4px; border-radius: 4px; font-weight: bold; }
+    body:not(.light-mode) .neon-highlight { color: #6366f1; }
+</style>
+
+<div class="container mt-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: var(--accent-color); font-weight: bold;">
+            <i class="fas fa-shield-alt mr-2"></i>Catálogo de Controles
+        </h2>
+        
+        {% if current_user.role in ['admin', 'administrador'] %}
+        <button class="btn fw-bold shadow-sm" data-toggle="collapse" data-target="#formNuevoControl" 
+                style="background-color: var(--accent-color); color: #fff;">
+            <i class="fas fa-plus mr-2"></i>NUEVO CONTROL
+        </button>
+        {% endif %}
+    </div>
+
+    <div class="row g-4 mb-3">
+        <div class="col-md-3 d-flex flex-column">
+            <div class="domain-card {% if dominio == 'Organizacional' %}active-domain{% endif %} mb-2">
+                <a href="{{ url_for('controles.listar_controles', dominio='Organizacional') }}" class="domain-link p-4">
+                    <div class="icon-box mb-2 text-info"><i class="fas fa-sitemap fa-2x"></i></div>
+                    <h5 class="domain-title">Organizacional</h5>
+                    <p class="domain-text small mb-0">{{ conteo['Organizacional'] }} Controles</p>
+                </a>
+            </div>
+            <button class="btn-domain-info-external" type="button" data-toggle="collapse" data-target="#infoOrganizacional">
+                <i class="fas fa-chevron-down me-1"></i> Más Información
+            </button>
+        </div>
+
+        <div class="col-md-3 d-flex flex-column">
+            <div class="domain-card {% if dominio == 'Personas' %}active-domain{% endif %} mb-2">
+                <a href="{{ url_for('controles.listar_controles', dominio='Personas') }}" class="domain-link p-4">
+                    <div class="icon-box mb-2 text-warning"><i class="fas fa-user-shield fa-2x"></i></div>
+                    <h5 class="domain-title">Personas</h5>
+                    <p class="domain-text small mb-0">{{ conteo['Personas'] }} Controles</p>
+                </a>
+            </div>
+            <button class="btn-domain-info-external" type="button" data-toggle="collapse" data-target="#infoPersonas">
+                <i class="fas fa-chevron-down me-1"></i> Más Información
+            </button>
+        </div>
+
+        <div class="col-md-3 d-flex flex-column">
+            <div class="domain-card {% if dominio == 'Físico' %}active-domain{% endif %} mb-2">
+                <a href="{{ url_for('controles.listar_controles', dominio='Físico') }}" class="domain-link p-4">
+                    <div class="icon-box mb-2 text-danger"><i class="fas fa-door-closed fa-2x"></i></div>
+                    <h5 class="domain-title">Físico</h5>
+                    <p class="domain-text small mb-0">{{ conteo['Físico'] }} Controles</p>
+                </a>
+            </div>
+            <button class="btn-domain-info-external" type="button" data-toggle="collapse" data-target="#infoFisico">
+                <i class="fas fa-chevron-down me-1"></i> Más Información
+            </button>
+        </div>
+
+        <div class="col-md-3 d-flex flex-column">
+            <div class="domain-card {% if dominio == 'Tecnológico' %}active-domain{% endif %} mb-2">
+                <a href="{{ url_for('controles.listar_controles', dominio='Tecnológico') }}" class="domain-link p-4">
+                    <div class="icon-box mb-2 text-success"><i class="fas fa-microchip fa-2x"></i></div>
+                    <h5 class="domain-title">Tecnológico</h5>
+                    <p class="domain-text small mb-0">{{ conteo['Tecnológico'] }} Controles</p>
+                </a>
+            </div>
+            <button class="btn-domain-info-external" type="button" data-toggle="collapse" data-target="#infoTecnologico">
+                <i class="fas fa-chevron-down me-1"></i> Más Información
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-5" id="domainInfoAccordion">
+        
+        <div class="col-12 collapse" id="infoOrganizacional" data-parent="#domainInfoAccordion">
+            <div class="info-collapse-card" style="border-left-color: #0dcaf0;">
+                <h4 class="text-info mb-3"><i class="fas fa-sitemap mr-2"></i>Dominio Organizacional (Controles A.5)</h4>
+                <div class="row">
+                    <div class="col-md-8 info-description">
+                        <p>Este dominio agrupa los controles relacionados con la estructura, políticas y gestión de la seguridad de la información dentro de la organización. Incluye aspectos como la clasificación de la información, gestión de activos y relaciones con proveedores.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled info-list">
+                            <li><i class="fas fa-check"></i> Políticas de seguridad</li>
+                            <li><i class="fas fa-check"></i> Roles y responsabilidades</li>
+                            <li><i class="fas fa-check"></i> Gestión de inventarios</li>
+                            <li><i class="fas fa-check"></i> Clasificación de la información</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 collapse" id="infoPersonas" data-parent="#domainInfoAccordion">
+            <div class="info-collapse-card" style="border-left-color: #ffc107;">
+                <h4 class="text-warning mb-3"><i class="fas fa-user-shield mr-2"></i>Dominio de Personas (Controles B.6)</h4>
+                <div class="row">
+                    <div class="col-md-8 info-description">
+                        <p>Enfocado en el factor humano de la ciberseguridad. Cubre todo el ciclo de vida del empleado: antes de la contratación (screening), durante el empleo (concienciación y formación) y tras la terminación del contrato o cambio de puesto.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled info-list">
+                            <li><i class="fas fa-check"></i> Investigación de antecedentes</li>
+                            <li><i class="fas fa-check"></i> Términos y condiciones</li>
+                            <li><i class="fas fa-check"></i> Concienciación y capacitación</li>
+                            <li><i class="fas fa-check"></i> Proceso disciplinario</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 collapse" id="infoFisico" data-parent="#domainInfoAccordion">
+            <div class="info-collapse-card" style="border-left-color: #dc3545;">
+                <h4 class="text-danger mb-3"><i class="fas fa-door-closed mr-2"></i>Dominio Físico (Controles C.7)</h4>
+                <div class="row">
+                    <div class="col-md-8 info-description">
+                        <p>Trata sobre la protección de las instalaciones, equipos y medios físicos. Su objetivo es prevenir el acceso físico no autorizado, daños e interferencias a la información y a las instalaciones de procesamiento de información de la organización.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled info-list">
+                            <li><i class="fas fa-check"></i> Perímetros de seguridad física</li>
+                            <li><i class="fas fa-check"></i> Controles de entrada física</li>
+                            <li><i class="fas fa-check"></i> Seguridad de los equipos</li>
+                            <li><i class="fas fa-check"></i> Política de escritorio limpio</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 collapse" id="infoTecnologico" data-parent="#domainInfoAccordion">
+            <div class="info-collapse-card" style="border-left-color: #198754;">
+                <h4 class="text-success mb-3"><i class="fas fa-microchip mr-2"></i>Dominio Tecnológico (Controles D.8)</h4>
+                <div class="row">
+                    <div class="col-md-8 info-description">
+                        <p>El dominio más extenso, cubre los controles técnicos para asegurar la infraestructura TI. Incluye autenticación, criptografía, seguridad operativa, seguridad en redes, desarrollo seguro y gestión de vulnerabilidades.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled info-list">
+                            <li><i class="fas fa-check"></i> Control de acceso y autenticación</li>
+                            <li><i class="fas fa-check"></i> Protección contra malware</li>
+                            <li><i class="fas fa-check"></i> Copias de seguridad (Backup)</li>
+                            <li><i class="fas fa-check"></i> Gestión de registros (Logs)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.role in ['admin', 'administrador'] %}
+    <div class="collapse mb-4" id="formNuevoControl">
+        <div class="card card-custom shadow" style="border-left: 4px solid var(--accent-color) !important;">
+            <div class="card-body p-4">
+                <h5 class="mb-3" style="color: var(--text-main);">Registrar Nuevo Control</h5>
+                <form action="{{ url_for('controles.nuevo_control') }}" method="POST" class="row g-3">
+                    <div class="col-md-2">
+                        <label for="codigo" class="form-label text-info small">CÓDIGO</label>
+                        <input type="text" name="codigo" id="codigo" class="form-control" placeholder="A.5.x" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="nombre" class="form-label text-info small">NOMBRE</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dominio" class="form-label text-info small">DOMINIO</label>
+                        <select name="dominio" id="dominio" class="form-control form-select">
+                            <option value="Organizacional">Organizacional</option>
+                            <option value="Personas">Personas</option>
+                            <option value="Físico">Físico</option>
+                            <option value="Tecnológico">Tecnológico</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn w-100 fw-bold" style="background-color: var(--accent-color); color: #fff;">
+                            GUARDAR
+                        </button>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <input type="text" name="descripcion" class="form-control" placeholder="Descripción detallada...">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card mb-4 border-0 shadow-sm card-custom">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('controles.listar_controles') }}" class="row align-items-center">
+                <input type="hidden" name="dominio" value="{{ dominio }}">
+                
+                <div class="col-md-8 mb-2 mb-md-0">
+                    <div class="input-group">
+                        <span class="input-group-text input-group-text-custom">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control input-search-custom" 
+                               placeholder="Buscar por código o nombre del control..." value="{{ search }}">
+                    </div>
+                </div>
+
+                <div class="col-md-4 d-flex" style:="gap: 20px;">
+                    <button type="submit" class="btn fw-bold" style="background-color: var(--accent-color); border: none; color: #fff; flex: 1;">
+                        FILTRAR
+                    </button>
+                    <a href="{{ url_for('controles.listar_controles') }}" 
+                    class="btn btn-outline-secondary" style="flex: 1; margin-left: 0;"
+                     title="Ver todos los controles">
+                        Ver Todos
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--accent-color);">
+                    <th style="width: 5%; color: var(--accent-color);"></th>
+                    <th style="width: 15%; color: var(--accent-color);">CÓDIGO</th>
+                    <th style="width: 35%; color: var(--accent-color);">NOMBRE</th>
+                    <th style="width: 20%; color: var(--accent-color);">DOMINIO</th>
+                    <th style="width: 25%; color: var(--accent-color);" class="text-center">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if pagination.items %}
+                    {% for c in pagination.items %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td class="text-center">
+                            <button class="btn btn-sm" onclick="toggleInfo('desc-{{ c.id }}', this)" 
+                                    style="color: var(--accent-color); border: 1px solid var(--accent-color); width: 30px; height: 30px; padding: 0;"
+                                    aria-label="Ver detalles">+</button>
+                        </td>
+                        <td class="content-to-highlight">
+                            <span class="badge border border-info text-info">{{ c.codigo }}</span>
+                        </td>
+                        <td class="fw-bold content-to-highlight" style="color: var(--text-main);">
+                            {{ c.nombre }}
+                        </td>
+                        <td>
+                            <span class="badge" style="background-color: rgba(0,0,0,0.1); border: 1px solid #555; color: var(--text-main);">
+                                {% if c.dominio == 'Organizacional' %}<i class="fas fa-sitemap text-info me-1"></i>
+                                {% elif c.dominio == 'Personas' %}<i class="fas fa-user-shield text-warning me-1"></i>
+                                {% elif c.dominio == 'Físico' %}<i class="fas fa-door-closed text-danger me-1"></i>
+                                {% elif c.dominio == 'Tecnológico' %}<i class="fas fa-microchip text-success me-1"></i>
+                                {% endif %}
+                                {{ c.dominio }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if current_user.role in ['admin', 'administrador'] %}
+                                <button class="btn-action-icon btn-edit me-2" data-toggle="modal" data-target="#editModal{{ c.id }}" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <a href="{{ url_for('controles.eliminar_control', id=c.id) }}" class="btn-action-icon btn-delete" onclick="return confirm('¿Eliminar?')" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            {% else %}
+                                <span class="badge bg-secondary">Solo Lectura</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                    <tr id="desc-{{ c.id }}" style="display: none;" class="description-row">
+                        <td colspan="5" class="p-0">
+                            <div class="description-content">
+                                <strong style="color: var(--accent-color);"><i class="fas fa-info-circle mr-2"></i>Descripción:</strong><br>
+                                {{ c.descripcion if c.descripcion else 'Sin descripción disponible.' }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fas fa-search fa-2x mb-3 d-block opacity-25"></i>
+                            No se encontraron controles en esta categoría.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="mt-5 mb-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('controles.listar_controles', page=pagination.prev_num, search=search, dominio=dominio) if pagination.has_prev else '#' }}">&laquo;</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('controles.listar_controles', page=page_num, search=search, dominio=dominio) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('controles.listar_controles', page=pagination.next_num, search=search, dominio=dominio) if pagination.has_next else '#' }}">&raquo;</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+{% for c in pagination.items %}
+<div class="modal fade" id="editModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-content-custom">
+            <form action="{{ url_for('controles.editar_control', id=c.id, page=pagination.page, search=search, dominio=dominio) }}" method="POST">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title" style="color: var(--accent-color);">Editar {{ c.codigo }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" style="color: var(--text-main);">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="codigo_{{ c.id }}" class="small text-info">CÓDIGO DEL CONTROL</label>
+                        <input type="text" name="codigo" id="codigo_{{ c.id }}" class="form-control" 
+                               value="{{ c.codigo }}" required style="font-family: monospace; font-weight: bold;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre_{{ c.id }}" class="small text-info">NOMBRE</label>
+                        <input type="text" name="nombre" id="nombre_{{ c.id }}" class="form-control" 
+                               value="{{ c.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dominio_{{ c.id }}" class="small text-info">DOMINIO</label>
+                        <select name="dominio" id="dominio_{{ c.id }}" class="form-control form-select">
+                            <option value="Organizacional" {% if c.dominio == 'Organizacional' %}selected{% endif %}>Organizacional</option>
+                            <option value="Personas" {% if c.dominio == 'Personas' %}selected{% endif %}>Personas</option>
+                            <option value="Físico" {% if c.dominio == 'Físico' %}selected{% endif %}>Físico</option>
+                            <option value="Tecnológico" {% if c.dominio == 'Tecnológico' %}selected{% endif %}>Tecnológico</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion_{{ c.id }}" class="small text-info">DESCRIPCIÓN</label>
+                        <textarea name="descripcion" id="descripcion_{{ c.id }}" class="form-control" rows="3">{{ c.descripcion }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-custom">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn fw-bold" style="background-color: var(--accent-color); color: #fff;">GUARDAR CAMBIOS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const searchTerm = "{{ search }}";
+    if (searchTerm.length > 1) {
+        const elements = document.querySelectorAll(".content-to-highlight");
+        const regex = new RegExp(`(${searchTerm})`, "gi");
+        
+        elements.forEach(el => {
+            const highlighted = el.innerHTML.replace(regex, '<span class="neon-highlight">$1</span>');
+            el.innerHTML = highlighted;
+        });
+    }
+});
+
+function toggleInfo(id, btn) {
+    const row = document.getElementById(id);
+    if (row.style.display === "none") {
+        row.style.display = "table-row";
+        btn.innerText = "-";
+    } else {
+        row.style.display = "none";
+        btn.innerText = "+";
+    }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       DISEÑO CYBER-ADMIN (Usuarios - Centrado)
+       ========================================= */
+
+    /* 1. Contenedor Principal Centrado */
+    /* Limitamos el ancho a 1300px para que no se vea estirado en monitores grandes */
+    .user-wrapper {
+        max-width: 1300px;
+        margin: 0 auto; /* Centrado horizontal */
+        padding: 0 15px;
+    }
+
+    /* 2. Layout del Formulario Superior */
+    .user-form-container {
+        margin-bottom: 30px;
+        background-color: var(--bg-surface);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-label-custom {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-muted); /* Color más suave para los labels */
+        margin-bottom: 8px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Inputs estilo "Card" */
+    .input-cyber {
+        background-color: var(--bg-body) !important; /* Un poco más oscuro que el fondo de la tarjeta */
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        border-radius: 8px;
+        height: 45px;
+        padding: 10px 15px;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    .input-cyber:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        background-color: var(--bg-surface) !important;
+    }
+
+    /* 3. Tabla Estilo "Mint Header" */
+    .cyber-table-container {
+        background-color: var(--bg-surface);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    /* Cabecera de la Tabla */
+    .cyber-thead th {
+        background-color: var(--accent-color) !important; /* Usamos la variable para consistencia */
+        color: #000 !important; /* Texto negro para contraste con el verde neón */
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 18px 20px;
+        border: none;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Ajuste para modo Light si el acento es muy oscuro */
+    body.light-mode .cyber-thead th {
+        color: #fff !important;
+    }
+
+    /* Filas de la Tabla */
+    .cyber-table tbody tr {
+        background-color: var(--bg-surface);
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.2s;
+    }
+    .cyber-table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        color: var(--text-main);
+        font-size: 0.95rem;
+    }
+    .cyber-table tbody tr:hover {
+        background-color: var(--bg-hover);
+    }
+
+    /* 4. Badges y Botones */
+    
+    /* Botones de Acción (Pills) */
+    .btn-action-pill {
+        background: transparent;
+        border: 1px solid var(--accent-color);
+        color: var(--accent-color);
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-decoration: none !important;
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center;
+        white-space: nowrap; /* Evita que el texto baje de línea */
+    }
+    .btn-action-pill i { 
+        margin-right: 6px; /* Separación del icono */
+        font-size: 0.85rem;
+    }
+    .btn-action-pill:hover {
+        background-color: var(--accent-color);
+        color: #fff; /* Texto blanco al hover */
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+    
+    /* Botón Eliminar (Rojo) */
+    .btn-action-delete {
+        border-color: #ff4d4d;
+        color: #ff4d4d;
+        padding: 6px 10px; /* Un poco más cuadrado */
+    }
+    .btn-action-delete:hover {
+        background-color: #ff4d4d;
+        color: white;
+        box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+    }
+
+    /* Botón Crear Grande */
+    .btn-create-large {
+        background-color: var(--accent-color);
+        color: #fff;
+        font-weight: 700;
+        width: 100%;
+        height: 45px;
+        border-radius: 8px;
+        border: none;
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-create-large i { margin-right: 8px; }
+    .btn-create-large:hover {
+        background-color: var(--accent-hover);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
+</style>
+
+<div class="user-wrapper mt-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold" style="font-weight: 800; letter-spacing: -1px;">
+                <i class="fas fa-users-cog text-neon mr-2"></i> Gestión de usuarios y accesos
+            </h2>
+        </div>
+        <div class="text-muted text-right">
+            <span style="font-size: 1.1rem; font-weight: 500;">
+                <i class="fas fa-database mr-2"></i>{{ usuarios|length }} registrados
+            </span>
+        </div>
+    </div>
+
+    <div class="user-form-container">
+        <form action="{{ url_for('usuarios.crear_usuario') }}" method="POST">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label for="username"
+                           class="form-label-custom">Usuario*</label>
+                    <input type="text" name="username" id="username" class="input-cyber" required placeholder="Ej: Juan">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="email" class="form-label-custom">Correo electrónico</label>
+                    <input type="email" name="email" id="email" class="input-cyber" placeholder="usuario@empresa.com">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="cargo" class="form-label-custom">Cargo</label>
+                    <input type="text" name="cargo" id="cargo" class="input-cyber" placeholder="Ej: Auditor">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="password" class="form-label-custom">Contraseña*</label>
+                    <input type="password" name="password" id="password" class="input-cyber" required placeholder="••••••">
+                </div>
+
+                <div class="col-md-2">
+                    <label for="role" class="form-label-custom">Rol</label>
+                    <select name="role" class="input-cyber" style="cursor: pointer;">
+                        <option value="Consultor">Consultor</option>
+                        <option value="Evaluador">Evaluador</option>
+                        <option value="Administrador">Administrador</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <button type="submit" class="btn-create-large">
+                        Crear
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="cyber-table-container mb-5">
+        <table class="table mb-0 cyber-table">
+            <thead class="cyber-thead">
+                <tr>
+                    <th style="width: 25%;">Usuario</th>
+                    <th style="width: 25%;">Info. Corporativa</th>
+                    <th style="width: 15%;">Rol</th>
+                    <th style="width: 15%;">Estado</th>
+                    <th style="text-align: right; width: 20%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" 
+                                 style="width: 40px; height: 40px; background-color: var(--bg-hover); border: 1px solid var(--border-color);">
+                                <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent-color);">
+                                    {{ u.username[0]|upper }}
+                                </span>
+                            </div>
+                            <div>
+                                <div class="fw-bold" style="font-size: 1rem;">{{ u.username }}</div>
+                                {% if u.id == current_user.id %}
+                                    <span class="badge badge-info" style="font-size: 0.7rem;">TÚ</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div style="line-height: 1.4;">
+                            <div style="font-weight: 600;">{{ u.cargo if u.cargo else '—' }}</div>
+                            <small class="text-muted">{{ u.email if u.email else 'Sin correo registrado' }}</small>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span style="font-weight: 500; opacity: 0.9;">{{ u.role }}</span>
+                    </td>
+
+                    <td>
+                        {% if u.is_active or u.activo %} 
+                        <span class="text-success" style="font-weight: 600; display: flex; align-items: center;">
+                                <i class="fas fa-check-circle mr-2"></i> Activo
+                            </span>
+                        {% else %}
+                            <span class="text-danger" style="font-weight: 600; display: flex; align-items: center;">
+                                <i class="fas fa-times-circle mr-2"></i> Inactivo
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-right">
+                        {% if u.username == 'admin_sadi' %}
+                            <span class="text-muted small fst-italic mr-2">Cuenta Protegida</span>
+                        {% else %}
+                            <div class="d-flex justify-content-end align-items-center">
+                                <a href="{{ url_for('usuarios.ver_usuario_detalle', id=u.id) }}" class="btn-action-pill mr-2" title="Ver y Editar Perfil">
+                <i class="fas fa-eye m-0"></i> </a>
+                                <form action="{{ url_for('usuarios.toggle_usuario', id=u.id) }}" method="POST" class="d-inline mr-2">
+                                    <button type="submit" class="btn-action-pill">
+                                        {% if u.is_active or u.activo %}
+                                            <i class="fas fa-user-slash"></i> Desactivar
+                                        {% else %}
+                                            <i class="fas fa-user-check"></i> Activar
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <form action="{{ url_for('usuarios.eliminar_usuario', id=u.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar permanentemente a {{ u.username }}?');">
+                                    <button type="submit" class="btn-action-pill btn-action-delete" title="Eliminar usuario">
+                                        <i class="fas fa-trash-alt m-0"></i> </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

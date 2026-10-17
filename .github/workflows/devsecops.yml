@@ -1,0 +1,186 @@
+# Pipeline DevSecOps de SADI
+#
+# Cada push y cada pull request pasa por seis compuertas. Un hallazgo que
+# supere el umbral detiene el pipeline: el codigo no se integra hasta tratarlo,
+# igual que SADI no deja cerrar una auditoria con un riesgo alto sin tratar.
+#
+#   1. Pruebas      pytest + cobertura contra PostgreSQL 15 real
+#   2. SAST         Bandit (umbral: severidad media) + Semgrep (OWASP Top 10)
+#   3. SCA          pip-audit: ninguna dependencia con vulnerabilidad conocida
+#   4. Secretos     Gitleaks sobre todo el historial
+#   5. Contenedor   Trivy: imagen (bloquea CRITICAL con parche) y configuracion IaC
+#   6. SBOM         CycloneDX de las dependencias Python
+#
+# Endurecimiento del propio pipeline (marco NIST SSDF / SLSA):
+#   - permisos minimos por defecto (contents: read);
+#   - Trivy fijado a versiones posteriores al compromiso de la cadena de
+#     suministro de marzo de 2026 (CVE-2026-33634): trivy-action v0.35.0 y
+#     binario v0.69.3. Recomendado: fijar cada accion a su SHA completo.
+
+name: devsecops
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devsecops-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  pruebas:
+    name: 1 · Pruebas y cobertura
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: sadi
+          POSTGRES_PASSWORD: sadi_ci
+          POSTGRES_DB: sadi
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sadi"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://sadi:sadi_ci@localhost:5432/sadi
+      TEST_DATABASE_URL: postgresql://sadi:sadi_ci@localhost:5432/sadi_test
+      SECRET_KEY: ci-solo-pruebas
+      S3_ENDPOINT: http://127.0.0.1:1   # sin MinIO: las pruebas no suben archivos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Crear base de pruebas
+        run: PGPASSWORD=sadi_ci psql -h localhost -U sadi -d sadi -c 'CREATE DATABASE sadi_test'
+      - run: pip install -r requirements.txt
+      - name: pytest
+        working-directory: app
+        run: >-
+          python -m pytest tests -q
+          --cov=. --cov-report=term --cov-report=xml:../coverage.xml
+          --junitxml=../junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pruebas
+          path: |
+            coverage.xml
+            junit.xml
+
+  sast:
+    name: 2 · SAST
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # publicar SARIF en Code Scanning
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Bandit (falla con severidad media o superior)
+        run: |
+          pip install bandit[sarif]
+          bandit -r app -x app/tests -f sarif -o bandit.sarif --exit-zero
+          bandit -r app -x app/tests --severity-level medium
+      - name: Semgrep (Python, Flask, OWASP Top 10)
+        run: |
+          pip install semgrep
+          semgrep scan --config p/python --config p/flask --config p/owasp-top-ten \
+            --metrics=off --sarif --output semgrep.sarif app
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: bandit.sarif
+          category: bandit
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+  sca:
+    name: 3 · Dependencias (SCA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: pip-audit (falla ante cualquier vulnerabilidad conocida)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt --strict --desc
+
+  secretos:
+    name: 4 · Secretos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # todo el historial, no solo el ultimo commit
+      - name: Gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.21.2 \
+            detect --source /repo --redact -v
+
+  contenedor:
+    name: 5 · Contenedor e IaC
+    runs-on: ubuntu-latest
+    needs: [pruebas]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen
+        run: docker build -t sadi:${{ github.sha }} .
+      - name: Trivy — imagen (informe CRITICAL/HIGH)
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          version: v0.69.3
+          image-ref: sadi:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '0'
+      - name: Trivy — imagen (compuerta: CRITICAL con parche disponible)
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          version: v0.69.3
+          image-ref: sadi:${{ github.sha }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Trivy — configuracion (Dockerfile, docker-compose)
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          version: v0.69.3
+          scan-type: config
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+
+  sbom:
+    name: 6 · SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: CycloneDX
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py requirements requirements.txt -o sbom.cdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json

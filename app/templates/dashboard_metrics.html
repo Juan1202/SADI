@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       DASHBOARD DE MADUREZ v5.3 (CON GESTIÓN DE RIESGOS)
+       ========================================= */
+
+    /* 1. CONFIGURACIÓN GENERAL */
+    .content-wrapper { background-color: var(--bg-body) !important; color: var(--text-main) !important; }
+    .page-title { color: var(--accent-color); font-weight: 800; font-size: 1.8rem; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .page-subtitle { color: var(--text-muted); font-size: 1.1rem; font-family: 'Courier New', monospace; }
+
+    /* 2. TARJETAS KPI */
+    .card-wireframe {
+        background: linear-gradient(145deg, rgba(30, 35, 45, 0.95), rgba(20, 25, 30, 0.98)); 
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .clickable-card { cursor: pointer; }
+    .clickable-card:hover { transform: translateY(-5px); border-color: var(--accent-color) !important; box-shadow: 0 0 20px rgba(99, 102, 241, 0.15); }
+    
+    .kpi-title { color: #aaa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 700; }
+    .kpi-value { color: #fff; font-size: 2.5rem; font-weight: 800; line-height: 1; font-family: 'Courier New', monospace; }
+    .kpi-sub { color: var(--text-muted); font-size: 0.8rem; margin-top: 8px; display: block; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+
+    /* TARJETA METODOLOGÍA */
+    .card-method-icon { font-size: 3.5rem; color: var(--accent-color); margin-bottom: 15px; opacity: 0.9; }
+    .card-method-text { color: #fff; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; }
+    .card-method-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* COLORES SEMÁFORO */
+    .gap-red { color: #ff4d4d !important; }    
+    .gap-yellow { color: #ffc107 !important; } 
+    .gap-green { color: #4f46e5 !important; }  
+
+    /* GRÁFICAS */
+    .chart-container {
+        background-color: var(--bg-surface); border: 1px solid var(--border-color);
+        border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: relative;
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .chart-title { font-weight: 700; color: var(--text-main); font-size: 1rem; margin: 0; }
+
+    .chart-controls { display: flex; gap: 10px; align-items: center; }
+    .chart-selector, .btn-chart-filter {
+        background: #111; color: var(--accent-color); border: 1px solid var(--accent-color);
+        border-radius: 20px; padding: 5px 15px; font-size: 0.85rem; font-weight: bold; cursor: pointer; outline: none; transition: 0.3s;
+    }
+    .chart-selector:hover, .btn-chart-filter:hover { background: var(--accent-color); color: #000; }
+
+    /* MODAL FILTRO */
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+    .filter-item { display: flex; align-items: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
+    .filter-item:hover { border-color: var(--accent-color); background: rgba(99,102,241,0.05); }
+    .filter-item input { margin-right: 10px; accent-color: var(--accent-color); transform: scale(1.2); }
+    .filter-item span { font-size: 0.85rem; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* TABLA Y OTROS */
+    .table-container-premium { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 40px; }
+    .table-cyber { width: 100%; border-collapse: collapse; }
+    .table-cyber thead th { color: var(--accent-color); background: rgba(0,0,0,0.2); font-size: 0.85rem; text-transform: uppercase; padding: 15px 20px; border-bottom: 2px solid var(--accent-color); }
+    .table-cyber td { padding: 15px 20px; vertical-align: middle; color: var(--text-main); font-size: 0.95rem; border-bottom: 1px solid var(--border-color); }
+    
+    .badge-gap { padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; min-width: 100px; text-align: center; display: inline-block; }
+    .bg-gap-red { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; border: 1px solid #ff4d4d; }
+    .bg-gap-yellow { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid #ffc107; }
+    .bg-gap-green { background: rgba(0, 201, 147, 0.15); color: #4f46e5; border: 1px solid #4f46e5; }
+
+    /* MODALES ESTILO */
+    .modal-content-premium { background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-main); }
+    .modal-header-premium { border-bottom: 1px solid var(--border-color); padding: 1.5rem; }
+    
+    .list-item-premium { 
+        background: var(--bg-surface); border: 1px solid var(--border-color); 
+        border-radius: 8px; margin-bottom: 10px; padding: 15px; 
+        display: flex; align-items: center; justify-content: space-between; 
+    }
+
+    /* FIX CENTRADO USER AVATAR */
+    .user-avatar { 
+        width: 46px; height: 46px; min-width: 46px; border-radius: 50%; 
+        margin-right: 15px; border: 2px solid var(--border-color); background: var(--bg-body); 
+        display: grid !important; place-items: center !important; padding: 0 !important;
+    }
+    .user-avatar i { font-size: 1.4rem; margin: 0 !important; padding: 0 !important; line-height: 1 !important; }
+
+    .btn-icon-glow { color: var(--text-muted); background: transparent; border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s; text-decoration: none; }
+    .btn-icon-glow:hover { color: #fff; border-color: var(--accent-color); background: rgba(99, 102, 241, 0.1); }
+
+    /* Estilos Tabla Metodología (Ajustada para Descripción) */
+    .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+    .info-table th { color: var(--accent-color); border-bottom: 2px solid var(--border-color); padding: 12px; text-align: left; vertical-align: top; }
+    .info-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); vertical-align: top; line-height: 1.5; }
+    .info-table td.font-weight-bold { color: #fff; width: 25%; }
+
+    /* LIGHT MODE */
+    body.light-mode .card-wireframe { background: #fff; border-color: #e0e0e0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    body.light-mode .kpi-value { color: #333; }
+    body.light-mode .kpi-sub { border-top-color: #eee; }
+    body.light-mode .chart-container { background: #fff; border-color: #e0e0e0; }
+    body.light-mode .chart-title { color: #333; }
+    body.light-mode .chart-selector, body.light-mode .btn-chart-filter { background: #fff; color: #333; border-color: #ccc; }
+    body.light-mode .card-method-text { color: #333; }
+    body.light-mode .modal-content-premium { background: #fff; color: #333; }
+    body.light-mode .filter-item { background: #f8f9fa; border-color: #ddd; }
+    body.light-mode .filter-item span { color: #333; }
+    body.light-mode .info-table td.font-weight-bold { color: #2c3e50; }
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="mb-5 d-flex justify-content-between align-items-end">
+        <div>
+            <div class="d-flex align-items-center mb-1">
+                <i class="fas fa-chart-pie mr-2" style="font-size: 1.8rem; color: var(--accent-color);"></i>
+                <h2 class="page-title mb-0">Tablero de Control GAP</h2>
+            </div>
+            <p class="page-subtitle ms-1 mb-0">Análisis de Brechas y Nivel de Madurez ISO 27001</p>
+        </div>
+        <div>
+            <span class="badge" style="background: var(--accent-color); color: #000; font-weight: bold;">v5.3 Live</span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 card-wireframe clickable-card" data-toggle="modal" data-target="#modalMadurez" title="Ver Metodología">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <i class="fas fa-book-reader card-method-icon"></i>
+                    <div class="card-method-text">Metodología GAP</div>
+                    <div class="card-method-sub">Ver Guía de Niveles y Grupos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 card-wireframe p-3 clickable-card" onclick="window.location.href='{{ url_for('auditoria.listar_auditorias') }}'">
+                <div class="card-body p-2">
+                    <h6 class="kpi-title">Auditorías Ejecutadas</h6>
+                    <div class="kpi-value">{{ total_auditorias|default(0) }}</div>
+                    <small class="kpi-sub">Total de registros en sistema</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 card-wireframe p-3 clickable-card" data-toggle="modal" data-target="#modalRiesgosAudit" style="border-color: #ff4d4d;">
+                <div class="card-body p-2">
+                    <h6 class="kpi-title" style="color: #ff4d4d;">Auditorías con Riesgos <i class="fas fa-biohazard ml-1"></i></h6>
+                    <div class="kpi-value gap-red">{{ count_riesgo|default(0) }}</div>
+                    <small class="kpi-sub" style="color: #ff4d4d;">Riesgos Altos/Extremos detectados</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 card-wireframe p-3">
+                <div class="card-body p-2">
+                    <h6 class="kpi-title">Alcance del Catálogo</h6>
+                    <div class="kpi-value">{{ total_controles|default(93) }}</div>
+                    <small class="kpi-sub">Controles ISO 27001:2022</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-8">
+            <div class="chart-container h-100">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="fas fa-layer-group mr-2" style="color: var(--accent-color);"></i>Análisis de Cumplimiento</h5>
+                    
+                    <div class="chart-controls">
+                        <button id="btnFilterControls" class="btn-chart-filter" onclick="openFilterModal()" style="display: none;">
+                            <i class="fas fa-filter mr-1"></i> Filtrar
+                        </button>
+
+                        <select id="chartSwitcher" class="chart-selector" onchange="toggleChart(this.value)">
+                            <option value="gap">Análisis GAP (Grupos)</option>
+                            <option value="detail">Detalle por Control</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="wrapperGapChart" style="position: relative; height: 350px;">
+                    <canvas id="gapChart"></canvas>
+                </div>
+
+                <div id="wrapperDetailChart" style="position: relative; height: 350px; display: none;">
+                    <canvas id="detailChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container h-100">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="fas fa-chart-pie mr-2" style="color: #ffc107;"></i>Auditorías por riesgo residual</h5>
+                </div>
+                <div style="position: relative; height: 300px; display: flex; justify-content: center;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container-premium">
+        <div class="d-flex justify-content-between align-items-center p-4">
+            <div>
+                <h5 class="mb-1" style="font-weight: 700; color: var(--text-main);">Evaluaciones Recientes</h5>
+                <small class="text-muted">Ordenado por fecha de ejecución</small>
+            </div>
+            <a href="{{ url_for('auditoria.listar_auditorias') }}" class="btn btn-outline-secondary btn-sm px-3" style="border-radius: 20px;">Ver Todo</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table-cyber">
+                <thead>
+                    <tr>
+                        <th class="pl-4">CÓDIGO</th>
+                        <th>TÍTULO</th>
+                        <th>AUDITOR</th>
+                        <th>FECHA</th>
+                        <th class="text-center">NIVEL (0-5)</th>
+                        <th class="text-center">ESTADO</th>
+                        <th class="text-center">ACCIÓN</th>
+                    </tr>
+                </thead>
+               <tbody>
+                    {% for ev in pagination.items %}
+                    
+                    {# ======================================================= #}
+                    {# CORRECCIÓN DEFINITIVA: ELIMINAR EL NoneType             #}
+                    {# ======================================================= #}
+                    
+                    {# score_promedio es madurez 0-5 (ADR-011); el riesgo 1-25 va en riesgo_maximo #}
+                    {% set madurez_ev = ev.score_promedio or 0 %}
+
+                    <tr>
+                        <td class="pl-4"><span class="badge" style="background: rgba(255,255,255,0.1); color: var(--text-main); border: 1px solid #555;">{{ ev.codigo }}</span></td>
+                        <td><div style="font-weight: 600;">{{ ev.titulo }}</div></td>
+                        <td class="text-muted"><i class="fas fa-user-circle mr-1"></i> {{ ev.evaluador }}</td>
+                        <td class="text-muted">{{ ev.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        
+                        <td class="text-center">
+                            <span style="font-family: 'Courier New'; font-weight: 800; font-size: 1.1rem; 
+                                color: {% if madurez_ev < 1.65 %}#ff4d4d{% elif madurez_ev < 3.26 %}#ffc107{% else %}#4f46e5{% endif %};">
+                                {{ "%.2f"|format(madurez_ev) }}
+                            </span>
+                        </td>
+                        
+                        <td class="text-center">
+                            {% if madurez_ev < 1.65 %}
+                                <span class="badge-gap bg-gap-red">NO CUMPLE</span>
+                            {% elif madurez_ev < 3.26 %}
+                                <span class="badge-gap bg-gap-yellow">PARCIAL</span>
+                            {% else %}
+                                <span class="badge-gap bg-gap-green">CUMPLE</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-center">
+                            <a href="{{ url_for('auditoria.ver_evaluacion', id=ev.id) }}" class="btn-icon-glow" title="Ver Detalle">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center py-5"><p class="text-muted">No hay actividad registrada.</p></td></tr>
+                    {% endfor %}
+                </tbody> 
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalMadurez" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-premium border-neon">
+            <div class="modal-header modal-header-premium neon-glow">
+                <h5 class="modal-title" style="color: var(--accent-color); font-weight: 700;">
+                    <i class="fas fa-book-reader mr-2"></i>Metodología de Evaluación GAP
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <h6 class="mb-3 font-weight-bold" style="color: var(--accent-color);">1. Escala de Madurez</h6>
+                <table class="info-table">
+                    <thead><tr><th>Puntaje (0-5)</th><th>Clasificación</th><th>Descripción</th></tr></thead>
+                    <tbody>
+                        <tr><td class="gap-green font-weight-bold">> 3.26</td><td><span class="badge-gap bg-gap-green">CUMPLE</span></td><td>Cumple con los requisitos ISO 27001.</td></tr>
+                        <tr><td class="gap-yellow font-weight-bold">1.66 - 3.25</td><td><span class="badge-gap bg-gap-yellow">PARCIAL</span></td><td>Cumplimiento parcial con hallazgos.</td></tr>
+                        <tr><td class="gap-red font-weight-bold">< 1.65</td><td><span class="badge-gap bg-gap-red">NO CUMPLE</span></td><td>No cumple requisitos. Crítico.</td></tr>
+                    </tbody>
+                </table>
+
+                <h6 class="mt-4 mb-3 font-weight-bold" style="color: var(--accent-color);">2. Grupos de Control</h6>
+                <table class="info-table">
+                    <thead><tr><th>Grupo</th><th>Descripción</th><th>Dominios Incluidos</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-weight-bold">Controles de Gestión</td>
+                            <td>Evaluación de la política de seguridad, organización de la información y cumplimiento normativo.</td>
+                            <td>Organizacional (A.5)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-weight-bold">Controles Técnicos</td>
+                            <td>Gestión de activos, seguridad física y ambiental, comunicaciones y gestión de operaciones.</td>
+                            <td>Físico (C.7) y Tecnológico (D.8)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-weight-bold">Controles Operacionales</td>
+                            <td>Desarrollo y mantenimiento de sistemas, control de accesos, gestión de incidentes y continuidad del negocio.</td>
+                            <td>Personas (B.6)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalRiesgosAudit" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-premium border-danger">
+            <div class="modal-header modal-header-premium danger-glow">
+                <h5 class="modal-title" style="color: #ff4d4d;"><i class="fas fa-exclamation-triangle mr-2"></i>Auditorías con Riesgos Altos</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            
+            <div class="modal-body modal-body-custom">
+                <p class="text-muted mb-3">Las siguientes auditorías contienen controles evaluados con riesgo ALTO o EXTREMO:</p>
+                
+                {% for ev in auditorias_riesgo %}
+                <div class="list-item-premium" style="border-left: 4px solid #ff4d4d;">
+                    <div class="d-flex align-items-center w-100 justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar" style="border-color: #ff4d4d; color: #ff4d4d; background: rgba(255, 77, 77, 0.1);">
+                                <i class="fas fa-radiation"></i>
+                            </div>
+                            <div>
+                                <div class="item-user" style="color: #ff4d4d;">{{ ev.codigo }}</div>
+                                <div style="font-weight: 600;">{{ ev.titulo }}</div>
+                                <span class="item-date">Estado: {{ ev.estado }}</span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('auditoria.ver_evaluacion', id=ev.id) }}" class="btn btn-sm btn-outline-danger" style="border-radius: 20px;">
+                            Gestionar <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                    <h5>Sin Riesgos Críticos</h5>
+                    <p class="text-muted">No hay auditorías con riesgos altos pendientes.</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalFilterControls" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content modal-content-premium border-neon">
+            <div class="modal-header modal-header-premium neon-glow">
+                <h5 class="modal-title" style="color: var(--accent-color);"><i class="fas fa-filter mr-2"></i>Filtrar Controles</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body modal-body-custom">
+                <div class="d-flex justify-content-between mb-3">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleAllChartFilters(true)">Marcar Todos</button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleAllChartFilters(false)">Desmarcar Todos</button>
+                </div>
+                <div id="chartFilterList" class="filter-grid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="applyChartFilter()" data-dismiss="modal" style="background: var(--accent-color); color: #000; font-weight: bold; border:none;">Aplicar Filtro</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<script>
+    let detailChartInstance = null;
+    const allControlData = {{ controles_detalle | tojson }};
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const isLight = document.body.classList.contains('light-mode');
+        const textColor = isLight ? '#666' : '#bbb';
+        const gridColor = isLight ? '#e0e0e0' : '#2a2a2a';
+        Chart.defaults.color = textColor;
+        Chart.defaults.borderColor = gridColor;
+
+        // 1. DATOS GAP
+        // data_dom llega ya en la escala de madurez 0-5, un valor por tema del
+        // Anexo A en el orden [A.5, A.6, A.7, A.8]. Antes se dividia entre 20,
+        // suponiendo un porcentaje 0-100, y las barras quedaban planas.
+        const maturityData = {{ data_dom | default([0, 0, 0, 0]) | tojson }};
+        
+        const gestionVal = parseFloat(maturityData[0] || 0); 
+        const tecnicosVal = (parseFloat(maturityData[2] || 0) + parseFloat(maturityData[3] || 0)) / 2;
+        const operacionalesVal = parseFloat(maturityData[1] || 0);
+
+        const ctxGap = document.getElementById('gapChart');
+        if (ctxGap) {
+            new Chart(ctxGap, {
+                type: 'bar',
+                data: {
+                    labels: ['Gestión', 'Técnicos', 'Operacionales'],
+                    datasets: [{
+                        label: 'Nivel Madurez (0-5)',
+                        data: [gestionVal, tecnicosVal, operacionalesVal],
+                        backgroundColor: ['rgba(255, 77, 77, 0.7)', 'rgba(255, 193, 7, 0.7)', 'rgba(0, 201, 147, 0.7)'],
+                        borderColor: ['#ff4d4d', '#ffc107', '#4f46e5'],
+                        borderWidth: 1, borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 5 }, x: { grid: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // 2. DONA STATUS
+        const statusData = [
+            {{ estado_counts['Critico'] | default(0) }}, 
+            {{ estado_counts['Alerta'] | default(0) }}, 
+            {{ estado_counts['Optimo'] | default(0) }}
+        ];
+        const ctxStatus = document.getElementById('statusChart');
+        if (ctxStatus) {
+            new Chart(ctxStatus, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Riesgo alto sin tratar', 'Riesgo moderado', 'Riesgo bajo'],
+                    datasets: [{ data: statusData, backgroundColor: ['#ff4d4d', '#ffc107', '#4f46e5'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, color: textColor } } }
+                }
+            });
+        }
+
+        renderChartFilters();
+        initDetailChart();
+    });
+
+    // LÓGICA DE FILTROS
+    function renderChartFilters() {
+        const container = document.getElementById('chartFilterList');
+        container.innerHTML = '';
+        allControlData.forEach((ctrl, index) => {
+            const div = document.createElement('div');
+            div.className = 'filter-item';
+            div.onclick = function(e) { 
+                if(e.target !== this.querySelector('input')) this.querySelector('input').click(); 
+            };
+            div.innerHTML = `
+                <input type="checkbox" class="ctrl-filter-chk" value="${index}" checked>
+                <span><b>${ctrl.codigo}</b> - ${ctrl.nombre.substring(0,15)}...</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function toggleAllChartFilters(state) {
+        document.querySelectorAll('.ctrl-filter-chk').forEach(c => c.checked = state);
+    }
+
+    function applyChartFilter() {
+        if(!detailChartInstance) return;
+        
+        const selectedIndices = [];
+        document.querySelectorAll('.ctrl-filter-chk').forEach((c, idx) => {
+            if(c.checked) selectedIndices.push(idx);
+        });
+
+        const filteredLabels = selectedIndices.map(i => allControlData[i].codigo);
+        const filteredData = selectedIndices.map(i => allControlData[i].madurez);
+        
+        const filteredColors = filteredData.map(val => {
+            if(val < 1.65) return '#ff4d4d';
+            if(val < 3.26) return '#ffc107';
+            return '#4f46e5';
+        });
+
+        detailChartInstance.data.labels = filteredLabels;
+        detailChartInstance.data.datasets[0].data = filteredData;
+        detailChartInstance.data.datasets[0].backgroundColor = filteredColors;
+        detailChartInstance.data.datasets[0].borderColor = filteredColors;
+        detailChartInstance.update();
+    }
+
+    function initDetailChart() {
+        const ctxDetail = document.getElementById('detailChart');
+        if (!ctxDetail) return;
+
+        const labels = allControlData.map(c => c.codigo);
+        const data = allControlData.map(c => c.madurez);
+        const colors = data.map(val => val < 1.65 ? '#ff4d4d' : val < 3.26 ? '#ffc107' : '#4f46e5');
+
+        detailChartInstance = new Chart(ctxDetail, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nivel Madurez (0-5)',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    y: { beginAtZero: true, max: 5, ticks: { stepSize: 1 } }, 
+                    x: { grid: { display: false } } 
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function toggleChart(type) {
+        const wrapperGap = document.getElementById('wrapperGapChart');
+        const wrapperDetail = document.getElementById('wrapperDetailChart');
+        const btnFilter = document.getElementById('btnFilterControls');
+        
+        if(type === 'gap') {
+            wrapperGap.style.display = 'block';
+            wrapperDetail.style.display = 'none';
+            btnFilter.style.display = 'none';
+        } else {
+            wrapperGap.style.display = 'none';
+            wrapperDetail.style.display = 'block';
+            btnFilter.style.display = 'block';
+        }
+    }
+    
+    function openFilterModal() {
+        $('#modalFilterControls').modal('show');
+    }
+</script>
+{% endblock %}

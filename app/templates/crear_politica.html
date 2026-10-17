@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* Input Styles: Fondo transparente adaptativo */
+    .form-control-cyber {
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+    .form-control-cyber:focus {
+        background-color: var(--bg-surface);
+        color: var(--text-main);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.1);
+    }
+    .form-control-cyber::placeholder { color: #888; opacity: 0.7; font-style: italic; font-size: 0.9rem; }
+    
+    /* Labels */
+    .label-cyber { color: var(--accent-color); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 15px; display: block; border-bottom: 1px dashed rgba(99,102,241,0.3); padding-bottom: 5px; margin-bottom: 15px;}
+    .label-cyber-secondary { color: var(--text-main); font-weight: 700; margin-bottom: 5px; display: block; font-size: 0.9rem; }
+
+    .card-header-cyber { border-bottom: 2px solid var(--accent-color); padding-bottom: 15px; margin-bottom: 20px; }
+</style>
+
+<div class="container pt-4 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="card bg-surface border-0 shadow-lg">
+                
+                <div class="card-body p-5">
+                    
+                    <div class="card-header-cyber d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="m-0 font-weight-bold text-main">
+                                <i class="fas {% if tipo_doc == 'Procedimiento' %}fa-tasks{% else %}fa-file-contract{% endif %} mr-2" style="color: var(--accent-color);"></i>
+                                {{ 'Editar' if es_edicion else 'Generar' }} {{ tipo_doc }}
+                            </h3>
+                            <p class="text-muted mb-0 small">Diligencie los campos para generar el documento PDF estandarizado.</p>
+                        </div>
+                        <span class="badge badge-secondary p-2">{{ tipo_doc | upper }}</span>
+                    </div>
+
+                    <form action="{{ url_for('documentos.editar_politica', id=doc_id) if es_edicion else url_for('documentos.crear_politica', tipo=tipo_doc) }}" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="label-cyber-secondary">Logo Corporativo</label>
+                                <div class="custom-file mt-1">
+                                    <input type="file" class="custom-file-input" id="logo_empresa" name="logo_empresa" accept="image/*">
+                                    <label class="custom-file-label form-control-cyber" for="logo_empresa">
+                                        {{ 'Mantener actual o cambiar...' if es_edicion else 'Elegir archivo...' }}
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-1">Formato PNG/JPG (Opcional)</small>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="label-cyber-secondary">Código Interno</label>
+                                    <input type="text" name="codigo" class="form-control form-control-cyber" 
+                                           value="{{ data.codigo if data else '' }}"
+                                           placeholder="Ej: POL-SGSI-01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="label-cyber-secondary">Título del Documento</label>
+                                    <input type="text" name="titulo" class="form-control form-control-cyber" 
+                                           value="{{ data.titulo if data else '' }}"
+                                           placeholder="Ej: Política General de Seguridad" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="label-cyber">1. Definición y Alcance</label>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="label-cyber-secondary">Objetivo</label>
+                                <textarea name="objetivo" class="form-control form-control-cyber" rows="4" 
+                                    placeholder="Describa el propósito principal...">{{ data.objetivo if data else '' }}</textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="label-cyber-secondary">Alcance</label>
+                                <textarea name="alcance" class="form-control form-control-cyber" rows="4" 
+                                    placeholder="¿A quién aplica este documento?">{{ data.alcance if data else '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <label class="label-cyber">2. Roles y Normativa</label>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="label-cyber-secondary">Responsables</label>
+                                <textarea name="responsables" class="form-control form-control-cyber" rows="3" 
+                                    placeholder="- Cargo A&#10;- Cargo B">{{ data.responsables if data else '' }}</textarea>
+                                <small class="text-muted">Un cargo por línea.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="label-cyber-secondary">Marco de Referencia</label>
+                                <textarea name="marco_legal" class="form-control form-control-cyber" rows="3" 
+                                    placeholder="- ISO 27001:2022&#10;- Ley de Datos">{{ data.marco_legal if data else '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <label class="label-cyber">3. Desarrollo del Documento</label>
+                        <div class="form-group mb-4">
+                            <label class="label-cyber-secondary">Lineamientos / Pasos</label>
+                            <textarea name="lineamientos" class="form-control form-control-cyber" rows="10" 
+                                placeholder="Escriba aquí el contenido principal...">{{ data.lineamientos if data else '' }}</textarea>
+                        </div>
+
+                        <label class="label-cyber">4. Control de Cambios</label>
+                        <div class="row mb-3 bg-light-transparent p-3 rounded border border-secondary mx-0">
+                            <div class="col-md-2">
+                                <div class="form-group m-0">
+                                    <label class="small font-weight-bold">Versión</label>
+                                    <input type="text" name="version" class="form-control form-control-cyber text-center" 
+                                           value="{{ data.version if data else '1.0' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group m-0">
+                                    <label class="small font-weight-bold">Fecha Versión</label>
+                                    <input type="date" name="fecha_version" class="form-control form-control-cyber" 
+                                           value="{{ fecha_hoy }}">
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="form-group m-0">
+                                    <label class="small font-weight-bold">Descripción del Cambio</label>
+                                    <input type="text" name="desc_cambio" class="form-control form-control-cyber" 
+                                           value="{{ data.desc_cambio if data else 'Creación inicial del documento' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="label-cyber">5. Aprobación y Autoridad</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-transparent border-secondary h-100">
+                                    <div class="card-header py-1 text-center bg-secondary text-white small font-weight-bold">ELABORÓ</div>
+                                    <div class="card-body p-2">
+                                        <input type="text" name="elaboro_nombre" class="form-control form-control-cyber mb-2 form-control-sm" 
+                                               placeholder="Nombre" value="{{ data.elaboro.nombre if data and data.elaboro else current_user.username }}">
+                                        <input type="text" name="elaboro_cargo" class="form-control form-control-cyber form-control-sm" 
+                                               placeholder="Cargo" value="{{ data.elaboro.cargo if data and data.elaboro else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-transparent border-secondary h-100">
+                                    <div class="card-header py-1 text-center bg-secondary text-white small font-weight-bold">REVISÓ</div>
+                                    <div class="card-body p-2">
+                                        <input type="text" name="reviso_nombre" class="form-control form-control-cyber mb-2 form-control-sm" 
+                                               placeholder="Nombre" value="{{ data.reviso.nombre if data and data.reviso else '' }}">
+                                        <input type="text" name="reviso_cargo" class="form-control form-control-cyber form-control-sm" 
+                                               placeholder="Cargo" value="{{ data.reviso.cargo if data and data.reviso else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-transparent border-secondary h-100">
+                                    <div class="card-header py-1 text-center bg-secondary text-white small font-weight-bold">APROBÓ</div>
+                                    <div class="card-body p-2">
+                                        <input type="text" name="aprobo_nombre" class="form-control form-control-cyber mb-2 form-control-sm" 
+                                               placeholder="Nombre" value="{{ data.aprobo.nombre if data and data.aprobo else '' }}">
+                                        <input type="text" name="aprobo_cargo" class="form-control form-control-cyber form-control-sm" 
+                                               placeholder="Cargo" value="{{ data.aprobo.cargo if data and data.aprobo else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-5 pt-3 border-top border-secondary">
+                            <a href="{{ url_for('documentos.listar_documentos_generados') if es_edicion else url_for('documentos.seleccionar_tipo_documento') }}" class="btn btn-outline-secondary mr-3 px-4 rounded-pill">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 rounded-pill font-weight-bold shadow-lg" 
+                                    style="background: var(--accent-color); border: none; color: #000;">
+                                <i class="fas fa-save mr-2"></i> {{ 'Actualizar y Regenerar' if es_edicion else 'Generar Documento' }}
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Script para mostrar el nombre del archivo seleccionado en el input file
+        const fileInput = document.getElementById('logo_empresa');
+        if(fileInput){
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const fileName = e.target.files[0].name;
+                    const label = e.target.nextElementSibling;
+                    label.innerText = fileName;
+                    label.style.borderColor = "var(--accent-color)";
+                    label.style.color = "var(--accent-color)";
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

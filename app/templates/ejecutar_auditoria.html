@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       DISEÑO ELITE CYBER-SECURITY (MODO RIESGOS V3 - FINAL)
+       ========================================= */
+
+    :root {
+        --cyber-bg: #141923;
+        --card-bg: #1a1a2e;
+        
+        /* Colores de Riesgo ISO 27005 */
+        --risk-low: #6a9a48;   /* 1-3 */
+        --risk-mod: #e6e600;   /* 4-8 (Amarillo) */
+        --risk-high: #ff8c00;  /* 9-15 (Naranja) */
+        --risk-ext: #ff0000;   /* 16-25 (Rojo) */
+        
+        --accent-color: #6366f1;
+        --tech-font: 'Courier New', monospace;
+    }
+
+    /* --- GRID Y TARJETAS --- */
+    .controls-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
+    
+    .control-card { 
+        background: linear-gradient(145deg, rgba(30, 35, 45, 0.95) 0%, rgba(20, 25, 30, 0.98) 100%); 
+        border: 1px solid rgba(99, 102, 241, 0.15); 
+        border-radius: 12px; 
+        padding: 25px; 
+        cursor: pointer; 
+        position: relative; 
+        overflow: hidden; 
+        display: flex; flex-direction: column; justify-content: space-between; 
+        min-height: 200px; 
+        transition: all 0.3s ease; 
+    }
+    .control-card:hover { transform: translateY(-5px); border-color: var(--accent-color); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15); }
+    
+    /* Barra lateral de estado */
+    .status-bar { position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #333; transition: background 0.3s; }
+    .status-low { background: var(--risk-low); box-shadow: 0 0 10px var(--risk-low); }
+    .status-mod { background: var(--risk-mod); box-shadow: 0 0 10px var(--risk-mod); }
+    .status-high { background: var(--risk-high); box-shadow: 0 0 10px var(--risk-high); }
+    .status-ext { background: var(--risk-ext); box-shadow: 0 0 15px var(--risk-ext); }
+    
+    .card-code { font-family: var(--tech-font); color: var(--accent-color); font-weight: bold; background: rgba(99, 102, 241, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+    .card-title { font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .card-desc { color: rgba(255,255,255,0.7); font-size: 0.85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    .card-risk-label { 
+        font-family: var(--tech-font); font-size: 1.1rem; font-weight: 800; 
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* BOTONERA */
+    .footer-actions { display: flex; justify-content: flex-end; gap: 20px; margin-top: 50px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .btn-custom-back { color: #aaa; border: 1px solid #555; border-radius: 30px; padding: 10px 30px; display: flex; align-items: center; transition: 0.3s; text-decoration: none; }
+    .btn-custom-back:hover { border-color: #fff; color: #fff; text-decoration: none; }
+    
+    .btn-finish-audit { 
+        background: linear-gradient(90deg, var(--accent-color), #4f46e5); 
+        color: #fff !important; font-weight: 800; border: none; padding: 12px 40px; 
+        border-radius: 30px; font-family: var(--tech-font); text-transform: uppercase; 
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); transition: 0.3s; 
+    }
+    .btn-finish-audit:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(99, 102, 241, 0.6); }
+
+    /* MODAL */
+    .question-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .question-panel { width: 95%; max-width: 1100px; height: 90vh; background: #15151e; border: 1px solid var(--accent-color); border-radius: 16px; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(99, 102, 241, 0.1); position: relative; }
+    .panel-header { padding: 20px 30px; background: #1a1a25; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0; }
+    .panel-body { flex: 1; padding: 30px; overflow-y: auto; background: #15151e; }
+    .panel-footer { padding: 20px 30px; background: #1a1a25; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 16px 16px; }
+
+    /* --- FILA DE PREGUNTA --- */
+    .question-row { 
+        background: rgba(255,255,255,0.03); 
+        border: 1px solid rgba(255,255,255,0.1); 
+        border-radius: 10px; 
+        margin-bottom: 25px; 
+        display: flex; flex-direction: column; 
+        overflow: hidden; 
+    }
+    
+    .q-main { padding: 20px; }
+    
+    .q-input-container { margin-bottom: 15px; }
+    .q-input-label { color: var(--accent-color); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
+    .q-text-input { 
+        background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; 
+        width: 100%; border-radius: 6px; padding: 10px; font-size: 1rem; resize: none;
+        transition: 0.3s;
+    }
+    .q-text-input:focus { border-color: var(--accent-color); outline: none; background: rgba(0,0,0,0.5); }
+
+    /* Controles de Riesgo */
+    .q-risk-area { 
+        display: flex; flex-wrap: wrap; gap: 20px; align-items: center; 
+        background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;
+        border: 1px dashed rgba(255,255,255,0.1);
+    }
+    
+    .risk-select-group { flex: 1; min-width: 150px; }
+    .risk-select-group label { font-size: 0.7rem; color: #aaa; display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: bold; }
+    .risk-select { 
+        background: #000; color: #fff; border: 1px solid #444; 
+        border-radius: 4px; padding: 8px; width: 100%; 
+    }
+    .risk-select:focus { border-color: var(--accent-color); outline: none; }
+
+    /* Badge Resultado */
+    .risk-result-container { text-align: center; min-width: 140px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 20px; }
+    .risk-result-badge {
+        padding: 8px 15px; border-radius: 6px; text-align: center; width: 100%;
+        border: 1px solid transparent; transition: all 0.3s;
+    }
+    .risk-result-badge span { display: block; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; }
+    .risk-result-badge small { font-size: 0.65rem; opacity: 0.9; display: block; }
+
+    /* Colores Badges */
+    .badge-risk-low { background: var(--risk-low); color: #fff; }
+    .badge-risk-mod { background: var(--risk-mod); color: #000; }
+    .badge-risk-high { background: var(--risk-high); color: #000; }
+    .badge-risk-ext { background: var(--risk-ext); color: #fff; box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+
+    /* Footer Pregunta */
+    .q-footer { background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; display: flex; gap: 15px; margin-top: 0; }
+    .hallazgo-input { 
+        background: transparent; border: 1px solid #444; color: #ddd; 
+        width: 100%; height: 50px; resize: none; font-size: 0.85rem; padding: 10px; border-radius: 6px; 
+    }
+    .hallazgo-input:focus { border-color: var(--accent-color); outline: none; }
+    
+    .btn-file-custom { border: 1px solid #444; color: #aaa; background: #222; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; transition: 0.3s; position: relative; overflow: hidden; height: 40px; }
+    .btn-file-custom:hover { border-color: var(--accent-color); color: var(--accent-color); }
+    .btn-file-custom input[type=file] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+    /* SCANNER ALERT */
+    @keyframes scanline-anim { 0% { top: -10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
+    .cyber-alert { 
+        position: relative; overflow: hidden;
+        background: linear-gradient(135deg, rgba(10, 15, 20, 0.95), rgba(15, 20, 30, 0.98)); 
+        border: 1px solid rgba(99, 102, 241, 0.3); color: #fff; 
+        border-radius: 12px; padding: 20px; margin-bottom: 30px; 
+        display: flex; align-items: center; 
+    }
+    .cyber-alert::after { 
+        content: ""; position: absolute; top: -10%; left: 0; width: 100%; height: 20%; 
+        background: linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.2), transparent); 
+        animation: scanline-anim 5s ease-in-out infinite; pointer-events: none; 
+    }
+    .cyber-highlight { color: #fff; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; font-family: var(--tech-font); border: 1px solid rgba(99, 102, 241, 0.3); }
+
+    /* LIGHT MODE */
+    body.light-mode .control-card { background: #ffffff !important; border: 1px solid #e0e0e0 !important; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    body.light-mode .control-card .card-title { color: #2c3e50 !important; text-shadow: none; }
+    body.light-mode .control-card .card-desc { color: #555 !important; }
+    body.light-mode .card-risk-label { text-shadow: none; } 
+    body.light-mode .question-overlay { background: rgba(255,255,255,0.95); }
+    body.light-mode .question-panel { background: #fff; border-color: #ddd; box-shadow: 0 0 50px rgba(0,0,0,0.15); }
+    body.light-mode .panel-header, body.light-mode .panel-footer { background: #fff; border-color: #eee; }
+    body.light-mode .panel-body { background: #f8f9fa; }
+    body.light-mode #modalTituloControl { color: #2c3e50 !important; }
+    body.light-mode #modalNombreControl { color: #666; }
+    body.light-mode .question-row { background: #fff; border-color: #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    body.light-mode .q-input-label { color: #00695c; }
+    body.light-mode .q-text-input { background: #fff; border-color: #ced4da; color: #333; }
+    body.light-mode .q-text-input:focus { border-color: var(--accent-color); background: #fff; }
+    body.light-mode .q-risk-area { background: #f1f3f5; border-color: #ddd; }
+    body.light-mode .risk-select { background: #fff; color: #333; border-color: #ced4da; }
+    body.light-mode .risk-select-group label { color: #666; }
+    body.light-mode .risk-result-container { border-left-color: #ddd; }
+    body.light-mode .q-footer { background: #fff; border-top-color: #eee; }
+    body.light-mode .hallazgo-input { border-color: #ced4da; color: #333; }
+    body.light-mode .btn-file-custom { background: #fff; border-color: #ced4da; color: #555; }
+    body.light-mode .cyber-alert { background: linear-gradient(135deg, #e0f7fa 0%, #ffffff 100%); border: 1px solid #b2ebf2; color: #333; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    body.light-mode .cyber-alert .fa-shield-alt { color: #00695c !important; }
+    body.light-mode .cyber-alert h5 { color: #00695c !important; }
+    body.light-mode .cyber-highlight { background: rgba(0, 105, 92, 0.1); color: #00695c; border-color: #80cbc4; }
+    body.light-mode .btn-finish-audit, body.light-mode #btnGuardarControl { color: #ffffff !important; }
+    body.light-mode .btn-custom-back { color: #666; border-color: #ccc; }
+    body.light-mode .btn-custom-back:hover { background: #eee; color: #333; }
+
+</style>
+
+<div class="container mt-4 pb-5">
+    <div class="alert cyber-alert fade show" role="alert">
+        <div class="mr-4 d-none d-md-block"><i class="fas fa-shield-alt fa-3x" style="color: var(--accent-color);"></i></div>
+        <div style="flex: 1;">
+            <h5 style="color: var(--accent-color); font-weight: 800; text-transform: uppercase; margin-bottom: 5px;">Sistema de Auditoría Activo</h5>
+            <p class="mb-0" style="opacity: 0.9;">Registro: <span class="cyber-highlight">{{ codigo }}</span> | Estado: <span class="cyber-highlight" style="color: var(--neon-amber);">EN PROCESO</span></p>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="background: rgba(99,102,241,0.1); padding: 15px; border-radius: 12px; margin-right: 20px; border: 1px solid rgba(99,102,241,0.2);">
+            <i class="fas fa-clipboard-check" style="font-size: 2rem; color: var(--accent-color);"></i>
+        </div>
+        <div>
+            <h1 style="font-weight: 800; margin: 0; color: var(--text-main); font-size: 2rem;">Ejecución de Auditoría</h1>
+            <div class="text-muted" style="font-family: var(--tech-font);">Auditor: {{ nombre_auditor }}</div>
+        </div>
+    </div>
+
+    <form action="{{ url_for('auditoria.finalizar_auditoria') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="nombre_auditor" value="{{ nombre_auditor }}">
+        <input type="hidden" name="titulo_auditoria_final" value="{{ titulo }}">
+        <input type="hidden" name="codigo_auditoria_final" value="{{ codigo }}">
+
+        <div class="controls-grid">
+            {% for c in controles %}
+            
+            <div class="control-card" onclick="abrirEvaluador({{ c.id }}, '{{ c.control.codigo }}', '{{ c.control.nombre }}')">
+                
+                {# ========================================================================= #}
+                {# LÓGICA CRÍTICA: LEE EL RIESGO PRE-CALCULADO POR PYTHON (NO JINJA) #}
+                {# ========================================================================= #}
+                {% set max_risk = c.riesgo_calculado_temp | default(0) %}
+                
+                <div class="status-bar {% if max_risk >= 20 %}status-ext{% elif max_risk >= 9 %}status-high{% elif max_risk >= 4 %}status-mod{% else %}status-low{% endif %}" id="bar_{{ c.id }}"></div>
+                
+                <div>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="card-code">{{ c.control.codigo }}</span>
+                    </div>
+                    <div class="card-title">{{ c.control.nombre }}</div>
+                    <div class="card-desc">{{ c.descripcion }}</div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-end mt-4">
+                    <span style="font-size: 0.8rem; color: #777;"><i class="fas fa-edit mr-1"></i> Evaluar</span>
+
+                    <span class="card-risk-label" id="display_risk_{{ c.id }}"
+                          style="color: {% if max_risk >= 20 %}var(--risk-ext){% elif max_risk >= 9 %}var(--risk-high){% elif max_risk >= 4 %}var(--risk-mod){% else %}var(--risk-low){% endif %};">
+                        {% if max_risk >= 20 %}EXTREMO{% elif max_risk >= 9 %}ALTO{% elif max_risk >= 4 %}MODERADO{% else %}BAJO{% endif %}
+                    </span>
+                </div>
+
+                {% if max_risk >= 9 %}
+                <div class="mt-3 pt-2" style="border-top: 1px solid rgba(255,255,255,0.08);" onclick="event.stopPropagation()">
+                    {% if c.riesgo_tratado %}
+                    <span class="badge badge-success px-3 py-2" style="font-size: 0.8rem; border-radius: 20px;">
+                        <i class="fas fa-check-circle mr-1"></i> RIESGO TRATADO
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('riesgos.tratar_riesgo_auditoria', resultado_id=c.id) }}"
+                       class="btn btn-sm btn-warning font-weight-bold"
+                       style="border-radius: 20px; font-size: 0.78rem;"
+                       onclick="event.stopPropagation()">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Tratar Riesgo
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer-actions">
+            <a href="{{ url_for('auditoria.vista_nueva_evaluacion') }}" class="btn-custom-back"><i class="fas fa-chevron-left mr-2"></i> SALIR / VOLVER</a>
+            <button type="submit" class="btn-finish-audit">FINALIZAR Y GUARDAR <i class="fas fa-save ml-2"></i></button>
+        </div>
+    </form>
+</div>
+
+<div class="question-overlay" id="evaluadorOverlay">
+    <div class="question-panel">
+        <div class="panel-header">
+            <div>
+                <h4 class="m-0" id="modalTituloControl" style="color: var(--accent-color); font-family: var(--tech-font); font-weight: bold;">CÓDIGO</h4>
+                <small class="text-muted" id="modalNombreControl">Descripción del control...</small>
+            </div>
+            <button class="btn btn-outline-danger btn-sm" onclick="cerrarEvaluador()" style="border-radius: 20px;">
+                <i class="fas fa-times mr-1"></i> CERRAR
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <div class="alert alert-info py-2 mb-3" style="background: rgba(99, 102, 241, 0.05); border-color: var(--accent-color); color: var(--accent-color); font-size: 0.9rem;">
+                <i class="fas fa-info-circle mr-2"></i> Defina el <strong>Criterio</strong> y luego evalúe la <strong>Probabilidad</strong> e <strong>Impacto</strong>.
+            </div>
+
+            <div id="contenedorPreguntas"></div>
+            
+            <button class="btn btn-outline-secondary btn-block border-dashed mt-4" onclick="agregarPreguntaUI()" style="border-style: dashed; opacity: 0.7;">
+                <i class="fas fa-plus mr-2"></i> Añadir Nuevo Criterio
+            </button>
+        </div>
+
+        <div class="panel-footer">
+            <button class="btn btn-primary px-5 py-2 mx-auto" onclick="guardarEvaluacionControl()" id="btnGuardarControl" style="border-radius: 30px; font-weight: 800; background: var(--accent-color); border: none; color: #fff;">
+                <i class="fas fa-save mr-2"></i> GUARDAR RIESGOS
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let controlIdActual = null;
+
+    // Función para calcular colores/textos de riesgo en tiempo real (Frontend)
+    function obtenerMatrizRiesgo(prob, imp) {
+        const p = parseInt(prob);
+        const i = parseInt(imp);
+        
+        // Matriz ISO 27005 Estándar (5x5)
+        if ((p==4 && i==5) || (p==5 && i>=4)) 
+            return { zona: 'E', clase: 'badge-risk-ext', texto: 'EXTREMO', color: 'var(--risk-ext)' };
+        if ((p==3 && i>=3) || (p==4 && i>=3 && i<=4) || (p==5 && i==3)) 
+            return { zona: 'A', clase: 'badge-risk-high', texto: 'ALTO', color: 'var(--risk-high)' };
+        if ((p==1 && i>=3) || (p==2 && i>=2) || (p==3 && i<=2) || (p==4 && i<=2) || (p==5 && i<=2)) {
+             // Excepciones bajas
+             if (p==1 && i<=2) return { zona: 'B', clase: 'badge-risk-low', texto: 'BAJO', color: 'var(--risk-low)' };
+             if (p==2 && i==1) return { zona: 'B', clase: 'badge-risk-low', texto: 'BAJO', color: 'var(--risk-low)' };
+             return { zona: 'M', clase: 'badge-risk-mod', texto: 'MODERADO', color: 'var(--risk-mod)' };
+        }
+        return { zona: 'B', clase: 'badge-risk-low', texto: 'BAJO', color: 'var(--risk-low)' };
+    }
+
+    function abrirEvaluador(id, codigo, nombre) {
+        controlIdActual = id;
+        document.getElementById('modalTituloControl').innerText = codigo;
+        document.getElementById('modalNombreControl').innerText = nombre;
+        document.getElementById('evaluadorOverlay').style.display = 'flex';
+        
+        const container = document.getElementById('contenedorPreguntas');
+        container.innerHTML = '<div class="text-center py-5 text-muted"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br>Cargando criterios...</div>';
+        
+        // Cargar preguntas existentes
+        fetch(`/api/control/${id}/obtener_preguntas`)
+            .then(res => res.json())
+            .then(data => {
+                container.innerHTML = '';
+                if(data.length > 0) {
+                    data.forEach(p => agregarPreguntaUI(p.texto, p.probabilidad, p.impacto, p.hallazgo, p.archivo));
+                } else {
+                    agregarPreguntaUI('', 1, 1); // Agregar una vacía por defecto
+                }
+            })
+            .catch(err => {
+                container.innerHTML = '<div class="text-danger text-center">Error al cargar datos</div>';
+            });
+    }
+
+    function cerrarEvaluador() {
+        document.getElementById('evaluadorOverlay').style.display = 'none';
+        controlIdActual = null;
+    }
+
+    // Agregar fila de pregunta al modal
+    function agregarPreguntaUI(texto='', prob=1, imp=1, hallazgo='', archivoPrevio='') {
+        const container = document.getElementById('contenedorPreguntas');
+        const div = document.createElement('div');
+        div.className = 'question-row';
+        div.dataset.archivoPrevio = archivoPrevio || '';
+
+        let archivoHTML = 'Ningún archivo';
+        if(archivoPrevio) {
+            archivoHTML = `<span style="color: var(--accent-color);"><i class="fas fa-check-circle mr-1"></i> ${archivoPrevio.substring(0, 20)}...</span>`;
+        }
+
+        // Asegurar valores enteros
+        prob = prob || 1;
+        imp = imp || 1;
+
+        div.innerHTML = `
+            <div class="q-main">
+                <div class="q-input-container">
+                    <label class="q-input-label"><i class="fas fa-question-circle mr-1"></i> Criterio de Auditoría / Pregunta</label>
+                    <textarea class="q-text-input" placeholder="Defina qué se está evaluando..." rows="2">${texto}</textarea>
+                </div>
+
+                <div class="q-risk-area">
+                    <div class="risk-select-group">
+                        <label>Probabilidad</label>
+                        <select class="risk-select prob-select" onchange="recalcularFila(this)">
+                            <option value="1" ${prob==1?'selected':''}>1 - Raro</option>
+                            <option value="2" ${prob==2?'selected':''}>2 - Improbable</option>
+                            <option value="3" ${prob==3?'selected':''}>3 - Posible</option>
+                            <option value="4" ${prob==4?'selected':''}>4 - Probable</option>
+                            <option value="5" ${prob==5?'selected':''}>5 - Casi Seguro</option>
+                        </select>
+                    </div>
+                    <div class="risk-select-group">
+                        <label>Impacto</label>
+                        <select class="risk-select imp-select" onchange="recalcularFila(this)">
+                            <option value="1" ${imp==1?'selected':''}>1 - Insignificante</option>
+                            <option value="2" ${imp==2?'selected':''}>2 - Menor</option>
+                            <option value="3" ${imp==3?'selected':''}>3 - Dañino</option>
+                            <option value="4" ${imp==4?'selected':''}>4 - Severo</option>
+                            <option value="5" ${imp==5?'selected':''}>5 - Crítico</option>
+                        </select>
+                    </div>
+                    
+                    <div class="risk-result-container">
+                        <label class="q-input-label" style="text-align:center;">Riesgo Resultante</label>
+                        <div class="risk-result-badge badge-risk-low">
+                            <span>BAJO</span>
+                            <small>Asumir</small>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-link text-danger ml-auto" onclick="eliminarPregunta(this)" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+
+            <div class="q-footer">
+                <div style="flex:1;">
+                    <textarea class="hallazgo-input" placeholder="Describa el hallazgo, evidencia técnica o notas adicionales...">${hallazgo || ''}</textarea>
+                </div>
+                <div style="text-align: right;">
+                    <label class="btn-file-custom mb-1">
+                        <i class="fas fa-paperclip mr-2"></i> Adjuntar
+                        <input type="file" class="file-input-row" onchange="updateRowFileLabel(this)">
+                    </label>
+                    <div class="file-label-display small text-muted" style="font-size: 0.75rem;">${archivoHTML}</div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(div);
+        // Calcular el riesgo inicial visualmente
+        const tempSelect = div.querySelector('.prob-select');
+        recalcularFila(tempSelect);
+    }
+
+    function recalcularFila(element) {
+        const row = element.closest('.question-row');
+        const prob = parseInt(row.querySelector('.prob-select').value);
+        const imp = parseInt(row.querySelector('.imp-select').value);
+        
+        const res = obtenerMatrizRiesgo(prob, imp);
+        const badge = row.querySelector('.risk-result-badge');
+        
+        badge.className = 'risk-result-badge ' + res.clase;
+        badge.querySelector('span').innerText = res.texto + ` (${prob*imp})`;
+        
+        let accion = 'Asumir';
+        if(res.zona === 'M') accion = 'Evaluar';
+        if(res.zona === 'A') accion = 'Reducir';
+        if(res.zona === 'E') accion = 'URGENTE';
+        badge.querySelector('small').innerText = accion;
+    }
+
+    function eliminarPregunta(btn) { btn.closest('.question-row').remove(); }
+
+    function updateRowFileLabel(input) {
+        // CORRECCIÓN: Buscamos el div "file-label-display" correctamente
+        // El input está dentro de un <label>, así que subimos al padre y buscamos el siguiente hermano
+        const labelPadre = input.closest('.btn-file-custom');
+        const displayDiv = labelPadre.nextElementSibling; 
+
+        if (displayDiv && input.files && input.files[0]) {
+            displayDiv.innerHTML = `<span style="color: var(--neon-amber); font-weight:bold;">
+                                    <i class="fas fa-file-upload mr-1"></i> ${input.files[0].name.substring(0, 20)}...
+                                    </span>`;
+        }
+    }
+
+    // --- FUNCIÓN CLAVE DE GUARDADO (CORREGIDA PARA ENVIAR PROBABILIDAD E IMPACTO) ---
+    // --- FUNCIÓN CLAVE DE GUARDADO (CORREGIDA PARA ARCHIVOS) ---
+    function guardarEvaluacionControl() {
+        const formData = new FormData();
+        const preguntasData = [];
+        
+        // Seleccionamos todas las filas de preguntas creadas
+        const rows = document.querySelectorAll('.question-row');
+        
+        let maxRiskValue = 0;
+
+        // Recorremos cada fila para armar el JSON y pescar los archivos
+        rows.forEach((row, index) => {
+            const prob = parseInt(row.querySelector('.prob-select').value) || 1;
+            const imp = parseInt(row.querySelector('.imp-select').value) || 1;
+            
+            const valorRiesgo = prob * imp;
+            if (valorRiesgo > maxRiskValue) maxRiskValue = valorRiesgo;
+
+            const textoPregunta = row.querySelector('.q-text-input').value || "Criterio sin definir";
+
+            // 1. Armamos el objeto de datos para esta pregunta
+            preguntasData.push({
+                texto: textoPregunta,
+                probabilidad: prob, 
+                impacto: imp,
+                hallazgo: row.querySelector('.hallazgo-input').value,
+                archivo_previo: row.dataset.archivoPrevio // Guardamos el nombre del archivo viejo si existe
+            });
+
+            // 2. Buscamos si hay un archivo NUEVO seleccionado en esta fila
+            const fileInput = row.querySelector('input[type="file"]');
+            
+            if(fileInput && fileInput.files && fileInput.files.length > 0) {
+                // ¡IMPORTANTE! La clave debe ser 'file_' + el índice del array (0, 1, 2...)
+                // Esto debe coincidir con el índice del array preguntasData
+                formData.append('file_' + index, fileInput.files[0]);
+                console.log(`Adjuntando archivo para pregunta ${index}:`, fileInput.files[0].name);
+            }
+        });
+
+        // Adjuntamos el JSON completo como string
+        formData.append('data', JSON.stringify(preguntasData));
+
+        // Efectos visuales de carga
+        const btn = document.getElementById('btnGuardarControl');
+        const ogText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> GUARDANDO...'; 
+        btn.disabled = true;
+
+        console.log("--- DEBUG FRONTEND ---");
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]); 
+        // Si ves [object File], es que SÍ se está enviando.
+    }
+        // Enviar al Backend
+        fetch(`/api/control/${controlIdActual}/guardar_preguntas`, {
+            method: 'POST', 
+            body: formData 
+            // NO poner 'Content-Type': 'multipart/form-data', fetch lo pone solo con el boundary correcto
+        })
+        .then(r => r.json())
+        .then(d => {
+            btn.innerHTML = ogText; 
+            btn.disabled = false;
+            
+            if(d.error) {
+                alert("Error del servidor: " + d.error);
+            } else {
+                // Éxito: Actualizar tarjeta y cerrar
+                actualizarTarjetaGrid(controlIdActual, maxRiskValue);
+                cerrarEvaluador();
+                
+                // Opcional: Mostrar un toast o alerta pequeña
+                // alert("Guardado exitosamente"); 
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.innerHTML = ogText; 
+            btn.disabled = false;
+            alert("Error de conexión al guardar.");
+        });
+    }
+
+    function actualizarTarjetaGrid(id, riskVal) {
+        const label = document.getElementById('display_risk_' + id);
+        const bar = document.getElementById('bar_' + id);
+        
+        let riskText = "BAJO";
+        let riskColor = "var(--risk-low)";
+        let barClass = "status-low";
+
+        if (riskVal >= 20) { 
+            riskText="EXTREMO"; riskColor="var(--risk-ext)"; barClass="status-ext"; 
+        } else if (riskVal >= 9) { 
+            riskText="ALTO"; riskColor="var(--risk-high)"; barClass="status-high"; 
+        } else if (riskVal >= 4) { 
+            riskText="MODERADO"; riskColor="var(--risk-mod)"; barClass="status-mod"; 
+        }
+
+        if(label) { label.innerText = riskText; label.style.color = riskColor; }
+        if(bar) { 
+            bar.className = ''; 
+            bar.classList.add('status-bar', barClass); 
+        }
+    }
+</script>
+{% endblock %}

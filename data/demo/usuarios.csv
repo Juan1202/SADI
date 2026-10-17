@@ -1,0 +1,6 @@
+﻿username;nombre;rol;cargo;email;proposito
+lvargas;Liliana Vargas;administrador;Oficial de Seguridad de la Información (CISO);lvargas@organizaciondemo.example;Administra el SGSI, los usuarios y la papelera.
+jcastano;Julián Castaño;auditor;Auditor Interno Líder;jcastano@organizaciondemo.example;Ejecuta la auditoría integral y la del tema Tecnológico.
+pmurillo;Paola Murillo;auditor;Auditora Interna;pmurillo@organizaciondemo.example;Ejecuta la auditoría del tema Organizacional y la de Personas. Su presencia permite ver el filtrado por propietario.
+dsalcedo;Daniel Salcedo;consultor;Consultor del SGSI;dsalcedo@organizaciondemo.example;Acompaña el diagnóstico GAP y la Declaración de Aplicabilidad.
+mrivas;Monica Rivas;lector;Coordinación de Calidad;mrivas@organizaciondemo.example;Solo consulta. Sirve para mostrar la matriz de permisos.

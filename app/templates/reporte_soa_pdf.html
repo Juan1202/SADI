@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte SoA — SADI</title>
+    <style>
+        /* Configuración de Página para xhtml2pdf */
+        @page {
+            size: A4;
+            margin: 2cm;
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 1cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 1cm;
+            }
+        }
+
+        body { font-family: Helvetica, sans-serif; font-size: 10pt; color: #333; }
+
+        /* Logo / Encabezado */
+        .sadi-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #6366f1; padding-bottom: 15px; }
+
+        /* Tablas */
+        table { width: 100%; border: 1px solid #000; border-collapse: collapse; }
+        th { background-color: #6366f1; color: #fff; padding: 5px; border: 1px solid #000; font-weight: bold; text-align: left; }
+        td { padding: 5px; border: 1px solid #666; vertical-align: top; }
+
+        /* Colores de celdas */
+        .bg-si { background-color: #ccffcc; color: #006600; text-align: center; font-weight: bold; }
+        .bg-no { background-color: #ffcccc; color: #990000; text-align: center; font-weight: bold; }
+
+        h1 { font-size: 18pt; text-transform: uppercase; color: #6366f1; border-bottom: 2px solid #6366f1; padding-bottom: 10px; margin-bottom: 20px; }
+
+        .meta-info { margin-bottom: 20px; font-size: 11pt; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; }
+        .meta-row { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="sadi-header">
+        <strong style="font-size:16px; color:#6366f1;">SADI</strong>
+        <small style="color:#666;">Sistema de Auditorías y Diagnóstico ISO 27001</small>
+    </div>
+
+    <h1>Declaración de Aplicabilidad (SoA)</h1>
+
+    <div class="meta-info">
+        <div class="meta-row"><strong>Código Documento:</strong> {{ soa.codigo }}</div>
+        <div class="meta-row"><strong>Dominio Evaluado:</strong> {{ soa.dominio }}</div>
+        <div class="meta-row"><strong>Fecha Actualización:</strong> {{ soa.fecha_actualizacion.strftime('%Y-%m-%d') }}</div>
+        <div class="meta-row"><strong>Estado:</strong> {{ soa.estado }}</div>
+    </div>
+
+    <p style="margin-bottom: 15px;">
+        <strong>Resumen:</strong> Justificación de la inclusión o exclusión de los controles del Anexo A (ISO/IEC 27001) para el dominio seleccionado.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">CÓDIGO</th>
+                <th width="30%">CONTROL</th>
+                <th width="10%">APLICA</th>
+                <th width="45%">JUSTIFICACIÓN</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in detalles %}
+            <tr>
+                <td>{{ d.control.codigo }}</td>
+                <td>
+                    <strong>{{ d.control.nombre }}</strong><br/>
+                    <pdf:spacer height="2px"/>
+                    <span style="font-size: 8pt; color: #555;">{{ d.control.descripcion }}</span>
+                </td>
+                <td class="{% if d.aplicable %}bg-si{% else %}bg-no{% endif %}">
+                    {% if d.aplicable %}SÍ{% else %}NO{% endif %}
+                </td>
+                <td>
+                    {{ d.justificacion or '---' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="footerContent">
+        <div style="text-align: center; font-size: 8pt; color: #888;">
+            Generado por SADI — Sistema de Auditorías y Diagnóstico ISO 27001 | Pág. <pdf:pagenumber> de <pdf:pagecount>
+        </div>
+    </div>
+</body>
+</html>

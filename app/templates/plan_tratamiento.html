@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Estilos Formulario Tabla */
+    .form-header {
+        background-color: var(--accent-color);
+        color: #000;
+        padding: 15px 20px;
+        border-radius: 12px 12px 0 0;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    
+    .form-section-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent-color);
+        font-weight: 700;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .input-cyber-form {
+        background-color: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        width: 100%; padding: 10px; border-radius: 6px;
+        font-size: 0.9rem; transition: 0.3s;
+    }
+    .input-cyber-form:focus {
+        border-color: var(--accent-color);
+        background-color: rgba(99,102,241,0.05);
+        outline: none;
+    }
+    .input-readonly {
+        background-color: rgba(0,0,0,0.2);
+        border-color: transparent;
+        cursor: not-allowed;
+        color: var(--text-muted);
+    }
+
+    /* Light Mode */
+    body.light-mode .input-cyber-form { background: #fff; border-color: #ced4da; color: #333; }
+    body.light-mode .input-readonly { background: #e9ecef; }
+</style>
+
+<div class="container-fluid pt-4 px-4 pb-5">
+    
+    <form method="POST">
+        <div class="card bg-surface border-0 shadow-lg" style="border-radius: 12px;">
+            
+            <div class="form-header">
+                <h4 class="m-0 font-weight-bold"><i class="fas fa-clipboard-list mr-2"></i>Plan de Tratamiento de Riesgos</h4>
+                <a href="{{ url_for('riesgos.analisis_riesgos') }}" class="btn btn-sm btn-dark text-white border-0"><i class="fas fa-times"></i> Cerrar</a>
+            </div>
+
+            <div class="card-body p-4">
+                
+                <div class="row mb-4">
+                    <div class="col-md-2">
+                        <label class="form-section-label">Control Referencia</label>
+                        <input type="text" class="input-cyber-form input-readonly" value="{{ control.codigo }}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Nombre del Control</label>
+                        <input type="text" class="input-cyber-form input-readonly" value="{{ control.nombre }}" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-section-label">Código Riesgo (Auto)</label>
+                        <input type="text" class="input-cyber-form input-readonly" name="codigo_riesgo" 
+                               value="{{ plan.codigo_riesgo if plan else 'Generado al guardar...' }}" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-section-label">Estado Plan</label>
+                        <select name="estado" class="input-cyber-form">
+                            <option value="Abierto" {% if plan and plan.estado == 'Abierto' %}selected{% endif %}>Abierto</option>
+                            <option value="En Progreso" {% if plan and plan.estado == 'En Progreso' %}selected{% endif %}>En Progreso</option>
+                            <option value="Cerrado" {% if plan and plan.estado == 'Cerrado' %}selected{% endif %}>Cerrado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr style="border-color: var(--border-color);">
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-section-label">Descripción del Riesgo / Hallazgo</label>
+                        <textarea name="descripcion" class="input-cyber-form" rows="3" placeholder="Describa qué podría fallar o qué falló...">{{ plan.descripcion_riesgo if plan else '' }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-section-label">Activos Relacionados</label>
+                        <textarea name="activos" class="input-cyber-form" rows="3" placeholder="Servidores, Bases de Datos, Personal...">{{ plan.activos_relacionados if plan else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label class="form-section-label">Nivel de Riesgo (1-25)</label>
+                        <input type="number" name="nivel_riesgo" class="input-cyber-form" value="{{ plan.nivel_riesgo_inicial if plan else '' }}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-section-label">Proceso de Negocio</label>
+                        <input type="text" name="proceso" class="input-cyber-form" placeholder="Ej: Gestión Financiera" value="{{ plan.proceso_negocio if plan else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Estrategia</label>
+                        <select name="estrategia" class="input-cyber-form">
+                            <option value="Mitigar" {% if plan and plan.estrategia == 'Mitigar' %}selected{% endif %}>Mitigar (Reducir)</option>
+                            <option value="Transferir" {% if plan and plan.estrategia == 'Transferir' %}selected{% endif %}>Transferir (Seguros/Terceros)</option>
+                            <option value="Aceptar" {% if plan and plan.estrategia == 'Aceptar' %}selected{% endif %}>Aceptar (Asumir)</option>
+                            <option value="Evitar" {% if plan and plan.estrategia == 'Evitar' %}selected{% endif %}>Evitar (Eliminar actividad)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-section-label">Acciones a Desarrollar (Tratamiento)</label>
+                        <textarea name="acciones" class="input-cyber-form" rows="4" placeholder="Pasos detallados para tratar el riesgo...">{{ plan.acciones if plan else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-section-label">Tipo de Control</label>
+                        <select name="tipo_control" class="input-cyber-form">
+                            <option value="Preventivo" {% if plan and plan.tipo_control == 'Preventivo' %}selected{% endif %}>Preventivo</option>
+                            <option value="Detective" {% if plan and plan.tipo_control == 'Detective' %}selected{% endif %}>Detective</option>
+                            <option value="Correctivo" {% if plan and plan.tipo_control == 'Correctivo' %}selected{% endif %}>Correctivo</option>
+                             <option value="Disuasivo" {% if plan and plan.tipo_control == 'Disuasivo' %}selected{% endif %}>Disuasivo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Responsable</label>
+                        <input type="text" name="responsable" class="input-cyber-form" placeholder="Nombre o Cargo" value="{{ plan.responsable if plan else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Plazo de Ejecución</label>
+                        <input type="date" name="plazo" class="input-cyber-form" value="{{ plan.plazo.strftime('%Y-%m-%d') if plan and plan.plazo else '' }}">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-transparent border-top border-secondary text-right p-3">
+                <button type="submit" class="btn btn-lg px-5 font-weight-bold" 
+                        style="background: var(--accent-color); color: #000; border-radius: 30px; box-shadow: 0 0 15px rgba(99,102,241,0.3);">
+                    <i class="fas fa-save mr-2"></i> GUARDAR TRATAMIENTO
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

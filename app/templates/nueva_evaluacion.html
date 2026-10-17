@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       ESTILOS LOCALES (ADAPTATIVOS)
+       ========================================= */
+
+    /* 1. Input del Título */
+    .input-title-custom {
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-main) !important;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 12px 15px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    .input-title-custom:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        outline: none;
+    }
+    .input-title-custom::placeholder {
+        font-weight: 400;
+        color: var(--text-muted) !important;
+        opacity: 0.6;
+    }
+
+    /* 2. Tarjetas de Dominio */
+    .domain-card {
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color) !important;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-main) !important;
+    }
+    .domain-card:hover {
+        background-color: var(--bg-hover) !important;
+        transform: translateY(-2px);
+    }
+    .domain-card.active-domain {
+        border: 2px solid var(--accent-color) !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+
+    /* 3. Contenedor Principal */
+    .main-card-custom {
+        background-color: var(--bg-surface) !important;
+        border: 1px solid var(--border-color) !important;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 300px); /* Ajuste ligero para compensar espacio */
+        min-height: 400px;
+        overflow: hidden; 
+        position: relative;
+    }
+    
+    /* 4. Header de la Tabla */
+    .card-header-custom {
+        background-color: var(--bg-hover) !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        position: relative; 
+        z-index: 20; 
+        flex-shrink: 0;
+        color: var(--text-main) !important;
+    }
+
+    /* 5. Contenedor de la Tabla (Scroll) */
+    .card-body-scroll {
+        flex-grow: 1; 
+        overflow-y: auto; 
+        overflow-x: hidden;
+        position: relative;
+        z-index: 5;
+    }
+
+    /* Scrollbar */
+    .card-body-scroll::-webkit-scrollbar { width: 8px; }
+    .card-body-scroll::-webkit-scrollbar-track { background: var(--bg-body); }
+    .card-body-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+    .card-body-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+    /* Encabezado Sticky */
+    .sticky-header th {
+        position: sticky; 
+        top: 0; 
+        background-color: var(--bg-surface) !important;
+        z-index: 15;
+        border-bottom: 2px solid var(--accent-color) !important;
+        color: var(--accent-color) !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Filas */
+    .fila-control { 
+        border-bottom: 1px solid var(--border-color); 
+        background-color: var(--bg-surface); 
+        color: var(--text-main);
+    }
+    .fila-control:hover {
+        background-color: var(--bg-hover) !important; 
+    }
+    
+    /* 6. Footer */
+    .card-footer-custom {
+        background-color: var(--bg-hover) !important;
+        border-top: 1px solid var(--border-color) !important;
+        position: relative; 
+        z-index: 20; 
+        flex-shrink: 0;
+    }
+
+    /* 7. CHECKBOX PERSONALIZADO */
+    .check-control {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 22px; 
+        height: 22px;
+        margin: 0 auto !important; 
+        display: block; 
+        cursor: pointer; 
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 2px solid var(--border-color) !important;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .check-control:hover { border-color: var(--accent-color) !important; }
+    .check-control:checked {
+        background-color: var(--accent-color) !important;
+        border-color: var(--accent-color) !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23000000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+        background-size: 70%;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    
+    .badge-text-adapt { color: var(--text-main) !important; }
+    .text-secondary-adapt { color: var(--text-muted) !important; }
+    
+    /* 8. BOTÓN DE ACCIÓN NEÓN */
+    .btn-neon-action {
+        background-color: var(--accent-color);
+        color: #fff !important; /* Texto blanco fijo */
+        border: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    .btn-neon-action:hover {
+        box-shadow: 0 0 15px var(--accent-color); /* Glow */
+        transform: translateY(-2px);
+        color: #fff !important;
+    }
+
+    /* =========================================
+       CORRECCIONES EXPECÍFICAS LIGHT MODE
+       ========================================= */
+    body.light-mode .input-title-custom {
+        background-color: #fff !important;
+        color: #212529 !important; /* Texto oscuro en fondo blanco */
+        border-color: #ced4da !important;
+    }
+    body.light-mode .input-title-custom::placeholder {
+        color: #6c757d !important;
+    }
+    body.light-mode .text-secondary-adapt {
+        color: #495057 !important; /* Etiqueta más oscura y legible */
+    }
+    body.light-mode .check-control {
+        background-color: #fff !important; /* Checkbox blanco en light mode */
+        border-color: #adb5bd !important;
+    }
+    
+    .main-container {
+        display: flex; flex-direction: column; height: 100%;
+    }
+</style>
+
+<div class="container-fluid mt-4 px-4 main-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title">
+            <i class="fas fa-clipboard-list mr-2"></i>Definir Alcance de Auditoría
+        </h2>
+    </div>
+
+    <form action="{{ url_for('auditoria.preparar_auditoria') }}" method="POST" style="display: flex; flex-direction: column; height: 100%;">
+        
+        <input type="hidden" name="auditor" value="{{ current_user.username }}_SADI">
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <label for="tituloAudit" class="form-label small text-secondary-adapt fw-bold ms-1">TÍTULO DE LA AUDITORÍA</label>
+                <input type="text" class="form-control input-title-custom" id="tituloAudit" name="titulo" placeholder="Ej: Auditoría Trimestral de Seguridad Física" required>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 domain-card w-100 p-0 text-start" role="button" tabindex="0" onclick="filtrarTabla('Organizacional')" id="card-Organizacional">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-sitemap fa-2x text-info mb-2"></i>
+                        <h6 class="fw-bold mb-1 badge-text-adapt">Organizacional</h6>
+                        <span class="badge bg-secondary">{{ conteo['Organizacional'] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 domain-card w-100 p-0 text-start" role="button" tabindex="0" onclick="filtrarTabla('Personas')" id="card-Personas">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-user-shield fa-2x text-warning mb-2"></i>
+                        <h6 class="fw-bold mb-1 badge-text-adapt">Personas</h6>
+                        <span class="badge bg-secondary">{{ conteo['Personas'] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 domain-card w-100 p-0 text-start" role="button" tabindex="0" onclick="filtrarTabla('Físico')" id="card-Físico">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-door-closed fa-2x text-danger mb-2"></i>
+                        <h6 class="fw-bold mb-1 badge-text-adapt">Físico</h6>
+                        <span class="badge bg-secondary">{{ conteo['Físico'] }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100 domain-card w-100 p-0 text-start" role="button" tabindex="0" onclick="filtrarTabla('Tecnológico')" id="card-Tecnológico">
+                    <div class="card-body text-center p-3">
+                        <i class="fas fa-microchip fa-2x text-success mb-2"></i>
+                        <h6 class="fw-bold mb-1 badge-text-adapt">Tecnológico</h6>
+                        <span class="badge bg-secondary">{{ conteo['Tecnológico'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm main-card-custom mb-4 flex-grow-1">
+            <div class="card-header border-0 d-flex flex-wrap justify-content-between align-items-center py-3 gap-2 card-header-custom">
+                <h5 class="mb-0 badge-text-adapt">
+                    <span id="lblDominio" class="fw-bold text-neon">Todos</span> 
+                    <span class="small ms-2 text-secondary-adapt" id="lblCount">({{ controles|length }})</span>
+                </h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="seleccionarVisibles(true)">
+                        <i class="fas fa-check-square me-1"></i> Todos
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="seleccionarVisibles(false)">
+                        <i class="fas fa-square me-1"></i> Ninguno
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filtrarTabla('Todos')">
+                        <i class="fas fa-list me-1"></i> Ver Todo
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-body-scroll">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="sticky-header">
+                        <tr>
+                            <th class="text-center py-3" style="width: 60px;"><i class="fas fa-check"></i></th>
+                            <th class="py-3" style="width: 100px;">CÓDIGO</th>
+                            <th class="py-3">CONTROL</th>
+                            <th class="py-3" style="width: 180px;">DOMINIO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaControles">
+                        {% for c in controles %}
+                        <tr class="fila-control" data-dominio="{{ c.dominio }}">
+                            <td class="text-center">
+                                <input class="form-check-input check-control" type="checkbox" 
+                                       name="controles" id="chk_{{ c.id }}" value="{{ c.id }}">
+                                <label for="chk_{{ c.id }}" class="sr-only">Seleccionar</label>
+                            </td>
+                            <td>
+                                <span class="badge border border-info text-info" style="font-size: 0.85rem;">
+                                    {{ c.codigo }}
+                                </span>
+                            </td>
+                            <td class="fw-normal badge-text-adapt" style="word-wrap: break-word; max-width: 600px;">
+                                {{ c.nombre }}
+                            </td>
+                            <td>
+                                {% if c.dominio == 'Organizacional' %}
+                                    <span class="badge bg-transparent border border-info text-info"><i class="fas fa-sitemap me-1"></i> Org.</span>
+                                {% elif c.dominio == 'Personas' %}
+                                    <span class="badge bg-transparent border border-warning text-warning"><i class="fas fa-user-shield me-1"></i> Pers.</span>
+                                {% elif c.dominio == 'Físico' %}
+                                    <span class="badge bg-transparent border border-danger text-danger"><i class="fas fa-door-closed me-1"></i> Físico</span>
+                                {% elif c.dominio == 'Tecnológico' %}
+                                    <span class="badge bg-transparent border border-success text-success"><i class="fas fa-microchip me-1"></i> Tecno.</span>
+                                {% else %}
+                                    <span class="badge bg-transparent border border-secondary text-muted">{{ c.dominio }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer border-0 py-3 card-footer-custom">
+                <div class="d-flex flex-wrap align-items-center justify-content-end">
+                    
+                    <a href="{{ url_for('documentos.vista_documentos') }}" class="btn btn-outline-info" style="border-radius: 20px; margin-right: 25px;">
+                        <i class="fas fa-file-contract mr-2"></i> Ir al SoA
+                    </a>
+
+                    <a href="{{ url_for('dashboard.home') }}" class="btn btn-outline-secondary px-4" style="margin-right: 25px;">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </a>
+                    
+                    <button type="submit" class="btn fw-bold px-4 btn-neon-action">
+                        <i class="fas fa-play mr-2"></i>INICIAR AUDITORÍA
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </form>
+</div>
+
+<script>
+    function filtrarTabla(dominio) {
+        const filas = document.querySelectorAll('.fila-control');
+        let count = 0;
+
+        filas.forEach(fila => {
+            if (dominio === 'Todos' || fila.dataset.dominio === dominio) {
+                fila.style.display = ''; 
+                count++;
+            } else {
+                fila.style.display = 'none'; 
+            }
+        });
+
+        document.getElementById('lblDominio').innerText = dominio;
+        document.getElementById('lblCount').innerText = `(${count})`;
+
+        document.querySelectorAll('.domain-card').forEach(card => card.classList.remove('active-domain'));
+        if (dominio !== 'Todos') {
+            const activeCard = document.getElementById(`card-${dominio}`);
+            if (activeCard) activeCard.classList.add('active-domain');
+        }
+    }
+
+    function seleccionarVisibles(estado) {
+        const checkboxes = document.querySelectorAll('.fila-control:not([style*="display: none"]) .check-control');
+        checkboxes.forEach(cb => cb.checked = estado);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        filtrarTabla('Todos');
+    });
+</script>
+{% endblock %}

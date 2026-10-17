@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Estilos tabla repositorio */
+    .repo-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    
+    .repo-table th { 
+        border-top: none; 
+        border-bottom: 2px solid var(--accent-color) !important;
+        color: var(--accent-color);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        padding: 15px;
+        background: rgba(0,0,0,0.1);
+    }
+    
+    .repo-table td { 
+        vertical-align: middle; 
+        border-bottom: 1px solid var(--border-color); 
+        padding: 15px; 
+        color: var(--text-main);
+    }
+
+    /* Badges de Tipo */
+    .type-badge {
+        padding: 5px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .badge-pol { background: rgba(171, 71, 188, 0.1); color: #ab47bc; border: 1px solid #ab47bc; }
+    .badge-proc { background: rgba(0, 201, 147, 0.1); color: #4f46e5; border: 1px solid #4f46e5; }
+
+    /* Botones de acción */
+    .btn-action-repo {
+        width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 8px; transition: 0.2s; border: 1px solid var(--border-color); background: transparent; color: var(--text-muted);
+        text-decoration: none;
+    }
+    .btn-action-repo:hover { text-decoration: none; transform: translateY(-2px); }
+    
+    .btn-edit:hover { color: #ffc107; border-color: #ffc107; background: rgba(255, 193, 7, 0.1); }
+    .btn-down:hover { color: var(--accent-color); border-color: var(--accent-color); background: rgba(99, 102, 241, 0.1); }
+    .btn-del:hover { color: #ff4d4d; border-color: #ff4d4d; background: rgba(255, 77, 77, 0.1); }
+
+    /* Light Mode fixes */
+    body.light-mode .repo-table th { background: #f8f9fa; }
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-folder-open mr-3" style="font-size: 1.8rem; color: var(--accent-color);"></i>
+                <div>
+                    <h2 style="color: var(--text-main); font-weight: 800; margin-bottom: 0; font-size: 1.5rem;">Repositorio Documental</h2>
+                    <p class="text-muted mb-0 small">Histórico de Políticas y Procedimientos generados</p>
+                </div>
+            </div>
+        </div>
+        <div>
+            <a href="{{ url_for('documentos.vista_documentos') }}" class="btn btn-outline-secondary btn-sm mr-2 px-3 rounded-pill">
+                <i class="fas fa-arrow-left mr-1"></i> Volver
+            </a>
+            <a href="{{ url_for('documentos.seleccionar_tipo_documento') }}" class="btn btn-primary btn-sm px-3 rounded-pill" style="background: var(--accent-color); border:none; color:#000; font-weight:bold;">
+                <i class="fas fa-plus mr-1"></i> Nuevo Documento
+            </a>
+        </div>
+    </div>
+
+    <div class="card bg-surface border-0 shadow-lg">
+        <div class="card-body p-0 table-responsive">
+            <table class="repo-table">
+                <thead>
+                    <tr>
+                        <th class="pl-4">Tipo</th>
+                        <th>Código</th>
+                        <th>Título del Documento</th>
+                        <th class="text-center">Versión</th>
+                        <th>Fecha Creación</th>
+                        <th>Autor</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documentos %}
+                    <tr>
+                        <td class="pl-4">
+                            {% if doc.tipo == 'Procedimiento' %}
+                                <span class="type-badge badge-proc">PROC</span>
+                            {% else %}
+                                <span class="type-badge badge-pol">POL</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-family: 'Courier New', monospace; font-weight: bold;">{{ doc.codigo }}</td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">{{ doc.titulo }}</div>
+                            {% if doc.nombre_archivo %}
+                            <small class="text-muted" style="font-size: 0.75rem;">
+                                <i class="fas fa-paperclip mr-1"></i> {{ doc.nombre_archivo|truncate(35) }}
+                            </small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge badge-dark border border-secondary">{{ doc.version }}</span>
+                        </td>
+                        <td class="text-muted">{{ doc.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td class="text-muted">
+                            <i class="fas fa-user-circle mr-1"></i> {{ doc.usuario.username if doc.usuario else 'Sistema' }}
+                        </td>
+                        
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center">
+                                <a href="{{ url_for('documentos.editar_politica', id=doc.id) }}" class="btn-action-repo btn-edit mr-2" title="Editar Contenido">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+
+                                {% if doc.nombre_archivo %}
+                                <a href="{{ url_for('documentos.descargar_documento_sgsi', id=doc.id) }}" class="btn-action-repo btn-down mr-2" title="Descargar PDF">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+
+                                {% if current_user.role in ['admin', 'Administrador'] %}
+                                <form action="{{ url_for('documentos.eliminar_documento_sgsi', id=doc.id) }}" method="POST" style="margin:0;" onsubmit="return confirm('¿Está seguro de eliminar este documento permanentemente?');">
+                                    <button type="submit" class="btn-action-repo btn-del" title="Eliminar">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div style="opacity: 0.5;">
+                                <i class="fas fa-file-contract fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted font-weight-normal">No hay documentos generados aún.</h5>
+                                <a href="{{ url_for('documentos.seleccionar_tipo_documento') }}" class="text-accent mt-2 d-inline-block">Comenzar ahora</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        /* DEFINICIÓN DE PÁGINA Y MARCOS (Nativo xhtml2pdf) */
+        @page {
+            size: A4;
+            margin: 2cm;
+
+            /* Definimos un marco estático para el Pie de Página */
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 2cm;
+                margin-right: 2cm;
+                height: 1cm;
+            }
+        }
+
+        /* ESTILOS GENERALES */
+        body { font-family: Helvetica, sans-serif; font-size: 12px; color: #333; }
+
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #6366f1; padding-bottom: 10px; }
+        .header h1 { color: #6366f1; margin: 0; font-size: 24px; text-transform: uppercase; }
+        .header p { margin: 5px 0; font-size: 14px; color: #666; }
+
+        .section-title {
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-left: 5px solid #6366f1;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        /* TABLAS */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th { background-color: #6366f1; color: #fff; padding: 8px; text-align: left; font-size: 11px; }
+        td { border-bottom: 1px solid #ddd; padding: 8px; font-size: 11px; vertical-align: top; }
+
+        /* RESUMEN EJECUTIVO */
+        .summary-table td { border: 1px solid #ddd; }
+        .summary-label { background-color: #eef2f5; font-weight: bold; width: 30%; }
+
+        /* RIESGOS */
+        .badge { padding: 3px 6px; border-radius: 4px; color: #fff; font-weight: bold; font-size: 10px; text-align: center; display: inline-block; }
+        .bg-low { background-color: #28a745; color: #fff; }
+        .bg-mod { background-color: #ffc107; color: #000; }
+        .bg-high { background-color: #fd7e14; color: #fff; }
+        .bg-ext { background-color: #dc3545; color: #fff; }
+
+        .link-evidence { color: #6366f1; text-decoration: underline; cursor: pointer; }
+
+        /* Estilo para el pie de página */
+        #footerContent {
+            text-align: right;
+            color: #666;
+            font-size: 9px;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+
+        /* Logo SADI */
+        .sadi-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="footerContent">
+        Generado por SADI - Sistema de Auditorías y Diagnóstico ISO 27001 - Pág. <pdf:pagenumber> de <pdf:pagecount>
+    </div>
+
+    <div class="header">
+        <h1>Informe de Auditoría ISO 27001</h1>
+        <p>Sistema de Auditorías y Diagnóstico ISO 27001 — SADI</p>
+    </div>
+
+    <div class="section-title">1. Resumen Ejecutivo</div>
+    <table class="summary-table">
+        <tr>
+            <td class="summary-label">Código de Auditoría:</td>
+            <td>{{ evaluacion.codigo }}</td>
+        </tr>
+        <tr>
+            <td class="summary-label">Título:</td>
+            <td>{{ evaluacion.titulo }}</td>
+        </tr>
+        <tr>
+            <td class="summary-label">Auditor Responsable:</td>
+            <td>{{ evaluacion.evaluador }}</td>
+        </tr>
+        <tr>
+            <td class="summary-label">Fecha de Ejecución:</td>
+            <td>{{ evaluacion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        <tr>
+            <td class="summary-label">Estado:</td>
+            <td>{{ evaluacion.estado }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">2. Detalle de Controles y Riesgos</div>
+
+    {% for resultado in evaluacion.resultados %}
+
+    <div style="background-color: #f9f9f9; padding: 5px; border: 1px solid #ddd; margin-top: 10px; font-weight: bold;">
+        {{ resultado.control.codigo }} - {{ resultado.control.nombre }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 35%;">Criterio Evaluado</th>
+                <th style="width: 10%;">Prob.</th>
+                <th style="width: 10%;">Imp.</th>
+                <th style="width: 15%;">Riesgo</th>
+                <th style="width: 30%;">Hallazgo / Evidencia</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for preg in resultado.preguntas %}
+
+            {% set p = preg.probabilidad | default(1) %}
+            {% set i = preg.impacto | default(1) %}
+            {% set r = p * i %}
+
+            <tr>
+                <td>{{ preg.texto_pregunta }}</td>
+                <td style="text-align: center;">{{ p }}</td>
+                <td style="text-align: center;">{{ i }}</td>
+                <td style="text-align: center;">
+                    {% if r >= 16 %}
+                        <span class="badge bg-ext">EXTREMO ({{r}})</span>
+                    {% elif r >= 9 %}
+                        <span class="badge bg-high">ALTO ({{r}})</span>
+                    {% elif r >= 4 %}
+                        <span class="badge bg-mod">MODERADO ({{r}})</span>
+                    {% else %}
+                        <span class="badge bg-low">BAJO ({{r}})</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if preg.hallazgo %}
+                        <div style="margin-bottom: 5px; font-style: italic;">"{{ preg.hallazgo }}"</div>
+                    {% endif %}
+
+                    {% if preg.archivo_evidencia %}
+                        <div>
+                            <strong>Adjunto:</strong><br>
+                            <a href="{{ url_for('auditoria.download_file', filename=preg.archivo_evidencia, _external=True) }}" class="link-evidence">
+                                Ver Evidencia
+                            </a>
+                        </div>
+                    {% else %}
+                        <span style="color: #999;">Sin adjuntos</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% if resultado.preguntas|length == 0 %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #999;">No se registraron criterios de evaluación para este control.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       ESTILOS EDITOR SOA (FINAL v3 - POLISHED)
+       ========================================= */
+
+    /* Contenedor Header Sticky (Mejorado) */
+    .sticky-toolbar {
+        z-index: 100;
+        background-color: var(--bg-body);
+        border-bottom: 1px solid var(--border-color);
+        margin-top: -1.5rem;
+        padding: 1.5rem 0 !important;
+    }
+
+    /* Botones de Acción Header */
+    .action-group {
+        display: flex;
+        gap: 20px; /* Separación aumentada */
+        align-items: center;
+    }
+
+    .btn-pdf-custom {
+        border: 1px solid #dc3545;
+        color: #dc3545 !important;
+        background: transparent;
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-pdf-custom:hover {
+        background: #dc3545;
+        color: #fff !important; /* Texto blanco en hover */
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-save-custom {
+        background: var(--accent-color);
+        color: #000 !important;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 25px;
+        font-weight: 800;
+        box-shadow: 0 0 15px rgba(99,102,241,0.2);
+        transition: all 0.3s ease;
+    }
+    .btn-save-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(99,102,241,0.4);
+    }
+
+    /* Estilos Radio Button SÍ/NO (Centrado corregido) */
+    .td-center-aligned {
+        vertical-align: middle !important;
+        text-align: center;
+        height: 100%;
+    }
+
+    .selector-container {
+        display: inline-flex; /* Centrado horizontal automático */
+        gap: 5px;
+        justify-content: center;
+        align-items: center; /* Centrado vertical interno */
+        background: rgba(0,0,0,0.05); /* Fondo sutil */
+        padding: 6px; /* Espaciado interno */
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        margin: 0 auto; /* Centrado en la celda */
+    }
+
+    .btn-select {
+        padding: 6px 18px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        color: var(--text-muted);
+        min-width: 55px;
+        text-align: center;
+        user-select: none;
+        margin-bottom: 0; /* Reset de bootstrap */
+    }
+
+    /* Estado Activo: SÍ (Verde) */
+    .btn-select.selected-si {
+        background-color: rgba(0, 201, 147, 0.15);
+        border-color: #4f46e5;
+        color: #4f46e5;
+        box-shadow: 0 0 8px rgba(0, 201, 147, 0.2);
+    }
+
+    /* Estado Activo: NO (Rojo) */
+    .btn-select.selected-no {
+        background-color: rgba(255, 77, 77, 0.15);
+        border-color: #ff4d4d;
+        color: #ff4d4d;
+        box-shadow: 0 0 8px rgba(255, 77, 77, 0.2);
+    }
+
+    .btn-select:hover { background-color: rgba(128,128,128,0.1); color: var(--text-main); }
+
+    /* Inputs y Tabla */
+    .radio-hidden { display: none; }
+
+    .table-soa th { 
+        background: rgba(0,0,0,0.03); 
+        color: var(--accent-color); 
+        border-bottom: 2px solid var(--accent-color); 
+        font-size: 0.85rem; 
+        text-transform: uppercase;
+        vertical-align: middle;
+        padding: 15px;
+    }
+    .table-soa td { 
+        vertical-align: middle !important; /* Forzar centrado vertical */
+        border-bottom: 1px solid var(--border-color); 
+        padding: 20px 15px; /* Más aire vertical */
+    }
+    
+    .input-cyber { 
+        background: var(--bg-body); 
+        border: 1px solid var(--border-color); 
+        color: var(--text-main); 
+        width: 100%; border-radius: 6px; padding: 12px; font-size: 0.9rem; resize: vertical;
+        transition: 0.3s;
+    }
+    .input-cyber:focus { border-color: var(--accent-color); outline: none; background: rgba(99,102,241,0.03); }
+
+    /* --- LIGHT MODE --- */
+    body.light-mode .selector-container { background: #f1f3f5; border-color: #dee2e6; }
+    body.light-mode .table-soa th { background: #f8f9fa; color: #00695c; }
+    body.light-mode .input-cyber { background: #fff; border-color: #ced4da; color: #333; }
+    body.light-mode .input-cyber:focus { background: #fff; border-color: var(--accent-color); }
+    body.light-mode .btn-select:hover { background: #e9ecef; color: #333; }
+    /* Ajuste botón PDF en light mode */
+    body.light-mode .btn-pdf-custom { color: #dc3545 !important; border-color: #dc3545; }
+    body.light-mode .btn-pdf-custom:hover { color: #fff !important; background: #dc3545; }
+
+</style>
+
+<div class="container-fluid pt-4 px-4 pb-5">
+    <form method="POST">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 sticky-toolbar">
+            
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('documentos.vista_documentos') }}" class="btn btn-outline-secondary mr-3 rounded-circle" style="width: 40px; height: 40px; display: grid; place-items: center;">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h4 class="m-0 font-weight-bold" style="color: var(--text-main);">Dominio: <span style="color: var(--accent-color);">{{ dominio }}</span></h4>
+                    <span class="text-muted small">Editando Declaración de Aplicabilidad</span>
+                </div>
+            </div>
+            
+            <div class="action-group">
+                <a href="{{ url_for('documentos.generar_pdf_soa', id=soa.id) }}" target="_blank" class="btn-pdf-custom">
+                    <i class="fas fa-file-pdf mr-2"></i> Reporte PDF
+                </a>
+                
+                <button type="submit" class="btn-save-custom">
+                    <i class="fas fa-save mr-2"></i> GUARDAR CAMBIOS
+                </button>
+            </div>
+        </div>
+
+        <div class="card bg-surface border-0 shadow-sm mb-5">
+            <div class="table-responsive">
+                <table class="table table-hover table-soa mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; text-align: center;">CÓDIGO</th>
+                            <th style="width: 20%;">CONTROL</th>
+                            <th style="width: 30%;">DESCRIPCIÓN</th>
+                            <th style="width: 17%; text-align: center;">APLICABILIDAD</th>
+                            <th style="width: 25%;">JUSTIFICACIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in detalles %}
+                        <tr>
+                            <td class="text-center">
+                                <span class="badge border border-secondary text-muted">{{ d.control.codigo }}</span>
+                            </td>
+                            
+                            <td class="font-weight-bold" style="color: var(--text-main);">
+                                {{ d.control.nombre }}
+                            </td>
+                            
+                            <td class="text-muted small" style="line-height: 1.5;">
+                                {{ d.control.descripcion }}
+                            </td>
+                            
+                            <td class="td-center-aligned">
+                                <div class="selector-container">
+                                    <label class="btn-select {{ 'selected-si' if d.aplicable else '' }}" onclick="selectOption(this, 'si')">
+                                        SÍ
+                                        <input type="radio" name="aplicable_{{ d.id }}" value="si" class="radio-hidden" {% if d.aplicable %}checked{% endif %}>
+                                    </label>
+                                    
+                                    <label class="btn-select {{ 'selected-no' if not d.aplicable else '' }}" onclick="selectOption(this, 'no')">
+                                        NO
+                                        <input type="radio" name="aplicable_{{ d.id }}" value="no" class="radio-hidden" {% if not d.aplicable %}checked{% endif %}>
+                                    </label>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <textarea name="justificacion_{{ d.id }}" class="input-cyber" rows="2" placeholder="Justifique la inclusión o exclusión...">{{ d.justificacion or '' }}</textarea>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Función para manejar el cambio visual de los botones
+    function selectOption(label, tipo) {
+        // Encontrar el contenedor padre
+        const container = label.closest('.selector-container');
+        
+        // Quitar clases de selección a todos los botones del grupo
+        container.querySelectorAll('.btn-select').forEach(btn => {
+            btn.classList.remove('selected-si');
+            btn.classList.remove('selected-no');
+        });
+
+        // Agregar clase al botón clickeado
+        if (tipo === 'si') {
+            label.classList.add('selected-si');
+        } else {
+            label.classList.add('selected-no');
+        }
+        
+        // El input radio se selecciona automáticamente al estar dentro del label, 
+        // pero por seguridad forzamos el check en el input hijo.
+        const input = label.querySelector('input');
+        if(input) input.checked = true;
+    }
+</script>
+{% endblock %}

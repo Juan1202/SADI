@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .profile-card {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+    .avatar-large {
+        width: 80px; height: 80px;
+        background-color: rgba(99,102,241,0.1);
+        color: var(--accent-color);
+        font-size: 2.5rem; font-weight: 700;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 0 15px rgba(99,102,241,0.2);
+        margin: 0 auto 16px;
+    }
+    .info-row { display: flex; flex-direction: column; margin-bottom: 14px; }
+    .info-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .info-value { font-size: 0.97rem; color: var(--text-main); }
+    .history-table thead th {
+        background-color: rgba(99,102,241,0.05);
+        color: var(--accent-color);
+        font-size: 0.82rem; text-transform: uppercase;
+        padding: 11px; border-bottom: 2px solid var(--accent-color); border-top: none;
+    }
+    .history-table td {
+        padding: 11px; font-size: 0.9rem; color: var(--text-main);
+        border-bottom: 1px solid var(--border-color); vertical-align: middle;
+    }
+    .history-table tbody tr:hover { background-color: var(--bg-hover); }
+</style>
+
+<div class="container mt-4 mb-5">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="fw-bold m-0" style="color:var(--text-main);">
+            <i class="fas fa-user-circle mr-2" style="color:var(--accent-color);"></i> Mi Perfil
+        </h2>
+    </div>
+
+    <div class="row">
+
+        <!-- Datos del usuario -->
+        <div class="col-md-3 mb-4">
+            <div class="profile-card text-center">
+                <div class="avatar-large">{{ usuario.username[0]|upper }}</div>
+                <h4 class="fw-bold mb-1" style="color:var(--text-main);">{{ usuario.username }}</h4>
+                <span class="badge bg-secondary mb-3">{{ usuario.role }}</span>
+                <hr style="border-color:var(--border-color);">
+                <div class="text-left">
+                    <div class="info-row">
+                        <span class="info-label">Correo</span>
+                        <span class="info-value">{{ usuario.email or '—' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Cargo</span>
+                        <span class="info-value">{{ usuario.cargo or '—' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Estado</span>
+                        <span class="info-value">
+                            {% if usuario.activo %}
+                                <span class="text-success"><i class="fas fa-circle mr-1" style="font-size:0.6rem;"></i>Activo</span>
+                            {% else %}
+                                <span class="text-danger"><i class="fas fa-circle mr-1" style="font-size:0.6rem;"></i>Inactivo</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de actividad -->
+        <div class="col-md-9">
+            <div class="profile-card">
+                <h5 class="fw-bold mb-4 border-bottom pb-3" style="color:var(--text-main);">
+                    <i class="fas fa-stream mr-2" style="color:var(--accent-color);"></i>
+                    Mi Historial de Actividad
+                </h5>
+
+                {% if actividades.items %}
+                    <div class="table-responsive">
+                        <table class="table history-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>MÓDULO</th>
+                                    <th>ACCIÓN</th>
+                                    <th>DETALLE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reg in actividades.items %}
+                                <tr>
+                                    <td class="text-nowrap" style="font-size:0.82rem; color:var(--text-muted);">
+                                        {{ reg.fecha.strftime('%d/%m/%Y %H:%M') }}
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background:rgba(99,102,241,0.1); border:1px solid var(--accent-color); color:var(--accent-color); font-size:0.75rem;">
+                                            {{ reg.modulo }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold" style="font-size:0.88rem;">{{ reg.accion }}</td>
+                                    <td style="font-size:0.83rem; color:var(--text-muted);">{{ reg.detalle or '—' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if actividades.pages > 1 %}
+                    <nav class="mt-3">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            {% if actividades.has_prev %}
+                                <li class="page-item"><a class="page-link" href="?page={{ actividades.prev_num }}">‹</a></li>
+                            {% endif %}
+                            <li class="page-item disabled"><span class="page-link">{{ actividades.page }} / {{ actividades.pages }}</span></li>
+                            {% if actividades.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ actividades.next_num }}">›</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-history fa-3x mb-3" style="opacity:0.2;"></i>
+                        <p class="mb-0">Aún no tienes actividad registrada.</p>
+                        <small>Las acciones que realices en el sistema aparecerán aquí.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SADI | Iniciar Sesión</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+    <style>
+        /* === BASE === */
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Source Sans Pro', sans-serif;
+            overflow: hidden;
+        }
+
+        /* FONDO DEGRADADO */
+        body {
+            background: radial-gradient(circle at bottom left, #6366f1 0%, #000000 60%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* === LAYOUT === */
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px;
+        }
+
+        .split-card {
+            width: 50%;
+            height: 600px;
+            background-color: #000;
+            border: 1px solid #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* === IZQUIERDA: VIDEO === */
+        .card-video {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* === DERECHA: FORMULARIO === */
+        .card-form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            background-color: #050505;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* === LOGO / ICONO === */
+        .header-logo {
+            margin-bottom: 20px;
+        }
+
+        /* === TÍTULO === */
+        .header-text {
+            margin-bottom: 50px;
+        }
+
+        .header-text h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .header-text h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #fff;
+            margin: 0;
+            position: relative;
+            display: inline-block;
+            letter-spacing: -1px;
+        }
+
+        /* Línea Decorativa debajo de ISO 27001 */
+        .header-text h1::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background-color: #6366f1;
+            margin: 15px auto 0;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Inputs */
+        .form-group {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+        .custom-input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: none;
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        .custom-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Password Eye */
+        .password-wrapper { position: relative; }
+        .toggle-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6366f1;
+            cursor: pointer;
+        }
+
+        /* Links */
+        .forgot-link {
+            display: block;
+            text-align: right;
+            width: 100%;
+            font-size: 0.8rem;
+            color: #6366f1;
+            text-decoration: underline;
+            margin-bottom: 30px;
+        }
+        .forgot-link:hover { color: #fff; }
+
+        /* Botón Login */
+        .btn-custom {
+            width: 100%;
+            padding: 14px;
+            background-color: #6366f1;
+            color: #fff;
+            font-weight: 800;
+            border: none;
+            border-radius: 5px;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn-custom:hover {
+            background-color: #4f46e5;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .copyright {
+            margin-top: 30px;
+            font-size: 0.65rem;
+            color: #555;
+        }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .login-wrapper { flex-direction: column; height: auto; padding: 10px; }
+            .split-card { width: 100%; height: auto; min-height: 300px; }
+            .card-form { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+
+        <div class="split-card card-video">
+            <video autoplay loop muted playsinline>
+                <source src="{{ url_for('static', filename='videos/login_ciberseguridad.mp4') }}" type="video/mp4">
+                <track kind="captions" src="{{ url_for('static', filename='videos/login_ciberseguridad.vtt') }}" srclang="es" label="Español">
+                Tu navegador no soporta video.
+            </video>
+        </div>
+
+        <div class="split-card card-form">
+
+            <div class="header-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+
+            <div class="header-text">
+                <h3>Plataforma de Gestión y Cumplimiento ISO 27001</h3>
+                <h1>SADI</h1>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} w-100 p-2 mb-3 small text-left" style="background: rgba(255,255,255,0.1); border-left: 3px solid #dc3545;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('auth.login') }}" method="post" style="width: 100%;">
+
+                <div class="form-group">
+                    <label for="username" class="form-label">Usuario</label>
+                    <input type="text" name="username" class="custom-input" required placeholder="Ingrese su usuario">
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="pass" class="custom-input" required placeholder="••••••••">
+                        <i class="fas fa-eye-slash toggle-icon" onclick="togglePass()" role="button" tabindex="0" onkeydown="if(event.key === 'Enter' || event.key === '') {this.click();}"></i>
+                    </div>
+                </div>
+
+                <a href="#" class="forgot-link">Olvidé mi contraseña</a>
+
+                <button type="submit" class="btn-custom">
+                    Iniciar sesión
+                </button>
+            </form>
+
+            <div class="copyright">
+                Sistema de Auditorías y Diagnóstico ISO 27001
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function togglePass() {
+            var input = document.getElementById('pass');
+            var icon = document.querySelector('.toggle-icon');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+
+</body>
+</html>

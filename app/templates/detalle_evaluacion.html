@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       REPORTE DETALLADO "CYBER-INTEL" v2.0 (FIXED)
+       ========================================= */
+    :root {
+        --cyber-bg: #141923;
+        --card-bg: #1a1a2e;
+        /* Colores de Riesgo */
+        --risk-low: #6a9a48;
+        --risk-mod: #00ff22;
+        --risk-high: #ffff00;
+        --risk-ext: #ff0000;
+        
+        --accent-color: #6366f1;
+        --tech-font: 'Courier New', monospace;
+        --text-muted: #8899a6;
+    }
+
+    /* HEADER CON EFECTO SCANNER */
+    @keyframes scanline-report { 0% { left: -10%; opacity: 0; } 50% { opacity: 1; } 100% { left: 110%; opacity: 0; } }
+
+    .report-header {
+        position: relative; overflow: hidden;
+        background: linear-gradient(135deg, rgba(20, 25, 35, 0.95), rgba(25, 30, 40, 0.98));
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        padding: 25px 30px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .report-header::after { 
+        content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; 
+        background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.1), transparent); 
+        transform: skewX(-20deg);
+        animation: scanline-report 6s ease-in-out infinite; pointer-events: none; 
+    }
+
+    .report-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+        text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+    .report-meta {
+        font-family: var(--tech-font);
+        color: var(--accent-color);
+        font-size: 0.9rem;
+        margin-top: 10px;
+        opacity: 0.9;
+    }
+
+    /* SCORE PANEL (ADAPTADO A RIESGOS) */
+    .score-panel {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid var(--accent-color);
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 50px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.15);
+    }
+    .big-score {
+        font-size: 3.5rem;
+        font-weight: 800;
+        font-family: var(--tech-font);
+        color: #fff;
+        text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        line-height: 1;
+    }
+    .score-label {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent-color);
+        font-size: 0.9rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    /* CONTROLES (TARJETAS PADRE) */
+    .result-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        margin-bottom: 30px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    .result-header {
+        padding: 20px 25px;
+        background: rgba(0,0,0,0.2);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .result-code {
+        font-family: var(--tech-font);
+        color: var(--accent-color);
+        font-weight: bold;
+        background: rgba(99, 102, 241, 0.1);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        margin-right: 15px;
+    }
+    
+    /* PREGUNTAS (DETALLE INTERNO) */
+    .questions-container { padding: 0; }
+    
+    .question-item {
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .question-item:last-child { border-bottom: none; }
+
+    .q-main-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    
+    .q-text { font-size: 1rem; color: #ddd; flex: 1; font-weight: 500; }
+
+    /* BADGES DE RIESGO */
+    .risk-badge {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 130px;
+        text-align: center;
+        border: 1px solid transparent;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .risk-badge span { display: block; font-size: 0.9rem; }
+    .risk-badge small { 
+        font-size: 0.65rem; 
+        opacity: 0.9; 
+        margin-top: 4px; 
+        font-weight: 600; 
+        text-transform: none; 
+        background: rgba(0,0,0,0.2);
+        padding: 2px 6px;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    /* Colores */
+    .badge-risk-low { background: var(--risk-low); color: #fff; border-color: #557d39; }
+    .badge-risk-mod { background: var(--risk-mod); color: #000; border-color: #00cc1b; }
+    .badge-risk-high { background: var(--risk-high); color: #000; border-color: #e6e600; }
+    .badge-risk-ext { background: var(--risk-ext); color: #fff; border-color: #cc0000; }
+
+    /* Métricas pequeñas (P e I) */
+    .risk-stat {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        background: rgba(255,255,255,0.05);
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-right: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        display: inline-flex;
+        align-items: center;
+    }
+    .risk-stat i { margin-right: 5px; opacity: 0.7; }
+
+    /* EVIDENCIA */
+    .evidence-detail {
+        background: rgba(0,0,0,0.3);
+        border-left: 3px solid #444;
+        padding: 10px 15px;
+        border-radius: 0 6px 6px 0;
+        margin-top: 5px;
+        font-size: 0.9rem;
+    }
+    .evidence-label { font-size: 0.7rem; color: #777; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; display: block; }
+    
+    .file-link {
+        display: inline-flex; align-items: center;
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.85rem;
+        margin-top: 8px;
+        padding: 5px 10px;
+        border: 1px dashed var(--accent-color);
+        border-radius: 6px;
+        transition: 0.3s;
+    }
+    .file-link:hover { background: rgba(99, 102, 241, 0.1); text-decoration: none; color: #fff; }
+
+    /* BOTONES ACCIÓN */
+    .action-bar {
+        margin-top: 60px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 30px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .btn-pdf {
+        background: linear-gradient(45deg, #ff4d4d, #c0392b);
+        color: #fff; border: none; padding: 12px 35px; border-radius: 30px; font-weight: bold;
+        box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); transition: 0.3s; display: inline-flex; align-items: center;
+    }
+    .btn-pdf:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 77, 77, 0.5); color: #fff; }
+
+    .btn-home {
+        background: transparent; border: 2px solid #555; color: #aaa;
+        padding: 10px 30px; border-radius: 30px; font-weight: 600;
+        transition: 0.3s; display: inline-flex; align-items: center; text-decoration: none;
+    }
+    .btn-home:hover { border-color: #fff; color: #fff; text-decoration: none; background: rgba(255,255,255,0.05); }
+
+    /* =======================================================
+       OVERRIDES LIGHT MODE (MODO CLARO)
+       ======================================================= */
+    body.light-mode .report-header { background: linear-gradient(135deg, #e0f7fa, #ffffff); border-color: #b2ebf2; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+    body.light-mode .report-header::after { background: linear-gradient(to right, transparent, rgba(0, 150, 136, 0.1), transparent); }
+    body.light-mode .report-title { color: #00695c; text-shadow: none; }
+    body.light-mode .report-meta { color: #555; }
+    
+    body.light-mode .score-panel { background: #fff; border-color: #e0e0e0; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+    body.light-mode .big-score { color: #2c3e50; text-shadow: none; }
+    body.light-mode .score-label { color: #009688; }
+    
+    body.light-mode .result-card { background: #fff; border-color: #e0e0e0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    body.light-mode .result-header { background: #f8f9fa; border-bottom-color: #eee; }
+    body.light-mode .result-code { background: #e0f2f1; color: #00695c; }
+    body.light-mode .card-title-text { color: #333; }
+    
+    body.light-mode .question-item { border-bottom-color: #eee; }
+    body.light-mode .q-text { color: #333; }
+    
+    body.light-mode .risk-stat { background: #f1f3f5; border-color: #ddd; color: #555; }
+    body.light-mode .evidence-detail { background: #f9f9f9; border-left-color: #ccc; color: #555; }
+    body.light-mode .evidence-label { color: #999; }
+    
+    body.light-mode .btn-pdf { color: #fff !important; }
+    body.light-mode .btn-home { color: #555; border-color: #ccc; }
+    body.light-mode .btn-home:hover { color: #000; border-color: #999; background: #eee; }
+
+</style>
+
+<div class="container mt-5 pb-5">
+
+    <div class="report-header">
+        <div>
+            <h1 class="report-title">Reporte de Auditoría</h1>
+            <div class="report-meta">
+                <span class="mr-3"><i class="fas fa-fingerprint mr-1"></i> {{ evaluacion.codigo }}</span>
+                <span class="mr-3"><i class="fas fa-user-shield mr-1"></i> {{ evaluacion.evaluador }}</span>
+                <span><i class="far fa-calendar-alt mr-1"></i> {{ evaluacion.fecha_fin.strftime('%d/%m/%Y') if evaluacion.fecha_fin else 'En Curso' }}</span>
+            </div>
+        </div>
+        <div>
+            <span class="badge badge-pill px-3 py-2" 
+                  style="font-size: 0.9rem; background: {% if evaluacion.estado == 'Finalizada' %}var(--neon-green){% else %}var(--neon-amber){% endif %}; color: #000;">
+                {{ evaluacion.estado|upper }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="score-panel">
+                <span class="score-label">Resumen de Evaluación</span>
+                <div class="big-score" style="font-size: 3rem;">
+                    {{ evaluacion.resultados|length }}
+                </div>
+                <div style="font-size: 1rem; color: var(--text-muted); margin-top: 5px;">
+                    Controles Analizados
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-4" style="color: var(--accent-color); font-family: var(--tech-font); border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px;">
+        <i class="fas fa-list-ul mr-2"></i> Detalle de Riesgos por Control
+    </h4>
+
+    {% for r in evaluacion.resultados %}
+    <div class="result-card">
+        <div class="result-header">
+            <div class="d-flex align-items-center">
+                <span class="result-code">{{ r.control.codigo }}</span>
+                <div>
+                    <h5 class="m-0 card-title-text" style="font-weight: 700; font-size: 1.1rem;">{{ r.control.nombre }}</h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-container">
+            {% for p in r.preguntas %}
+            
+            {# --- CORRECCIÓN CRÍTICA: MANEJO DE VALORES NULL (DEFAULT 1) --- #}
+            {% set prob = p.probabilidad | default(1, true) %}
+            {% set imp = p.impacto | default(1, true) %}
+            {% set nivel = prob * imp %}
+            
+            {# Valores por defecto (Baja) #}
+            {% set zona = 'B' %}
+            {% set clase_risk = 'badge-risk-low' %}
+            {% set texto_risk = 'BAJA' %}
+            {% set accion_risk = 'Asumir Riesgo' %}
+
+            {# Lógica Exacta de Matriz #}
+            {% if (prob==4 and imp==5) or (prob==5 and imp>=4) %}
+                {% set zona = 'E' %}{% set clase_risk = 'badge-risk-ext' %}{% set texto_risk = 'EXTREMA' %}{% set accion_risk = 'Reducir/Evitar' %}
+            {% elif (prob==3 and imp>=3) or (prob==4 and imp>=3 and imp<=4) or (prob==5 and imp==3) %}
+                {% set zona = 'A' %}{% set clase_risk = 'badge-risk-high' %}{% set texto_risk = 'ALTA' %}{% set accion_risk = 'Reducir/Transferir' %}
+            {% elif (prob==1 and imp>=3) or (prob==2 and imp>=2) or (prob==3 and imp<=2) or (prob==4 and imp<=2) or (prob==5 and imp<=2) %}
+                 {# Excepciones visuales Bajas #}
+                 {% if not ((prob==1 and imp<=2) or (prob==2 and imp==1)) %}
+                    {% set zona = 'M' %}{% set clase_risk = 'badge-risk-mod' %}{% set texto_risk = 'MODERADA' %}{% set accion_risk = 'Evaluar/Reducir' %}
+                 {% endif %}
+            {% endif %}
+
+            <div class="question-item">
+                <div class="q-main-row">
+                    <div style="flex: 1;">
+                        <div class="d-flex flex-column">
+                            <span class="q-text mb-3">{{ p.texto_pregunta }}</span>
+                            <div>
+                                <span class="risk-stat" title="Probabilidad de Ocurrencia (1-5)">
+                                    <i class="fas fa-dice"></i> Probabilidad: <strong>{{ prob }}</strong>
+                                </span>
+                                <span class="risk-stat" title="Nivel de Impacto (1-5)">
+                                    <i class="fas fa-bullseye"></i> Impacto: <strong>{{ imp }}</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="risk-badge {{ clase_risk }}">
+                            <span><i class="fas fa-exclamation-triangle mr-1"></i> {{ texto_risk }} ({{ nivel }})</span>
+                            <small>{{ accion_risk }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                {% if p.hallazgo or p.archivo_evidencia %}
+                <div class="evidence-detail">
+                    {% if p.hallazgo %}
+                        <span class="evidence-label">Hallazgos / Observaciones:</span>
+                        <div style="white-space: pre-wrap; margin-bottom: 8px;">{{ p.hallazgo }}</div>
+                    {% endif %}
+
+                    {% if p.archivo_evidencia %}
+                        <span class="evidence-label">Evidencia Digital:</span>
+                        <div>
+                            <a href="{{ url_for('auditoria.download_file', filename=p.archivo_evidencia) }}" target="_blank" class="file-link">
+                                <i class="fas fa-paperclip mr-2"></i> {{ p.archivo_evidencia | nombre_evidencia }} </a>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            {% if not r.preguntas %}
+            <div class="p-4 text-center text-muted" style="font-style: italic;">
+                No hay desglose de preguntas disponible para este control.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="action-bar">
+        <a href="{{ url_for('dashboard.home') }}" class="btn-home">
+            <i class="fas fa-home mr-2"></i> Volver al Inicio
+        </a>
+        
+        <a href="{{ url_for('auditoria.generar_pdf', evaluacion_id=evaluacion.id) }}" target="_blank" class="btn-pdf">
+            <i class="fas fa-file-pdf mr-2"></i> Descargar Reporte
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* =========================================
+       ESTILOS METODOLOGÍA RIESGOS (FINAL V3)
+       ========================================= */
+    
+    .risk-header {
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin-bottom: 30px;
+    }
+
+    .table-risk {
+        width: 100%;
+        border-collapse: separate; 
+        border-spacing: 0 4px; 
+    }
+    
+    .table-risk th {
+        color: var(--accent-color);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        padding: 15px;
+        border-bottom: 2px solid var(--border-color);
+        background-color: var(--bg-surface);
+    }
+
+    /* Filas Coloreadas */
+    .row-risk td {
+        padding: 12px 15px;
+        color: #000 !important; /* Texto negro forzado para contraste en filas de color */
+        vertical-align: middle;
+        font-weight: 600;
+        border: none;
+    }
+    .row-risk td:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; font-weight: 800; text-align: center;}
+    .row-risk td:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+
+    /* COLORES DE NIVEL */
+    .bg-lvl-1 { background-color: #6a9a48; } 
+    .bg-lvl-2 { background-color: #00ff22; } 
+    .bg-lvl-3 { background-color: #ffff00; } 
+    .bg-lvl-4 { background-color: #ff9900; } 
+    .bg-lvl-5 { background-color: #ff0000; } 
+
+    /* Excepción para Nivel 5 (Rojo): Texto Blanco */
+    .row-risk.bg-lvl-5 td { color: #fff !important; }
+
+    /* Matriz de Calor */
+    .matrix-container {
+        display: grid;
+        grid-template-columns: 140px repeat(5, 1fr);
+        gap: 3px;
+        background-color: var(--bg-body);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+    }
+    
+    .matrix-header {
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .matrix-cell {
+        padding: 10px;
+        text-align: center;
+        font-weight: 800; /* Letra principal más gruesa */
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 70px;
+        transition: transform 0.2s;
+        font-size: 1.1rem;
+    }
+    
+    /* ESTILO LETRA PEQUEÑA (Baja, Media, Alta...) */
+    .matrix-cell small {
+        font-size: 0.75rem;
+        opacity: 1; /* Quitar transparencia para mejor lectura */
+        display: block;
+        margin-top: 4px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .matrix-cell:hover { transform: scale(1.05); z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+
+    /* COLORES Y CONTRASTE ZONAS MATRIZ */
+    /* Zonas Claras: Texto Oscuro (#212529) */
+    .zone-B { background-color: #6a9a48; color: #212529 !important; } 
+    .zone-M { background-color: #00ff22; color: #212529 !important; } 
+    .zone-A { background-color: #ffff00; color: #212529 !important; } 
+    
+    /* Zona Oscura: Texto Blanco Puro */
+    .zone-E { background-color: #ff0000; color: #ffffff !important; } 
+
+    .matrix-row-label {
+        background-color: var(--bg-surface);
+        color: var(--text-main);
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .card-risk {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    /* Leyenda de Acciones (Parte Inferior) */
+    .legend-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        background: var(--bg-body);
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+    .legend-badge {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-radius: 6px;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    .legend-text {
+        color: var(--text-main);
+        font-size: 0.95rem;
+    }
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="risk-header">
+        <h2 style="color: var(--text-main); font-weight: 700;">Metodología de Evaluación de Riesgos</h2>
+        <p class="text-muted mb-0">Criterios definidos para determinar la probabilidad, impacto y nivel de riesgo de los hallazgos.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-6">
+            <div class="card card-risk h-100">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h5 class="m-0" style="color: var(--accent-color);"><i class="fas fa-dice mr-2"></i>Probabilidad de Ocurrencia</h5>
+                </div>
+                <div class="card-body p-3">
+                    <table class="table-risk">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Nivel</th>
+                                <th>Descriptor</th>
+                                <th>Descripción</th>
+                                <th>Frecuencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="row-risk bg-lvl-1"><td>1</td><td>Raro</td><td>Solo en circunstancias excepcionales.</td><td>No presentado en últimos 3 años.</td></tr>
+                            <tr class="row-risk bg-lvl-2"><td>2</td><td>Improbable</td><td>Puede ocurrir en algún momento.</td><td>Al menos una vez en últimos 3 años.</td></tr>
+                            <tr class="row-risk bg-lvl-3"><td>3</td><td>Posible</td><td>Podría ocurrir en algún momento.</td><td>Al menos una vez en últimos 2 años.</td></tr>
+                            <tr class="row-risk bg-lvl-4"><td>4</td><td>Probable</td><td>Probablemente ocurrirá.</td><td>Al menos una vez en el último año.</td></tr>
+                            <tr class="row-risk bg-lvl-5"><td>5</td><td>Casi Seguro</td><td>Se espera que ocurra en la mayoría de circunstancias.</td><td>Más de una vez al año.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card card-risk h-100">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3">
+                    <h5 class="m-0" style="color: var(--accent-color);"><i class="fas fa-bullseye mr-2"></i>Nivel de Impacto</h5>
+                </div>
+                <div class="card-body p-3">
+                    <table class="table-risk">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Nivel</th>
+                                <th>Descriptor</th>
+                                <th>Descripción del Efecto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="row-risk bg-lvl-1"><td>1</td><td>Insignificante</td><td>Consecuencias o efectos mínimos sobre la entidad.</td></tr>
+                            <tr class="row-risk bg-lvl-2"><td>2</td><td>Menor</td><td>Bajo impacto o efecto sobre la entidad.</td></tr>
+                            <tr class="row-risk bg-lvl-3"><td>3</td><td>Dañino</td><td>Medianas consecuencias o efectos sobre la entidad.</td></tr>
+                            <tr class="row-risk bg-lvl-4"><td>4</td><td>Severo</td><td>Altas consecuencias o efectos sobre la entidad.</td></tr>
+                            <tr class="row-risk bg-lvl-5"><td>5</td><td>Crítico</td><td>Desastrosas consecuencias o efectos sobre la entidad.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card card-risk">
+                <div class="card-header bg-transparent border-bottom border-secondary py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="m-0" style="color: var(--accent-color);"><i class="fas fa-th mr-2"></i>Matriz de Respuesta a Riesgos</h5>
+                    <span class="badge bg-secondary">Eje Y: Probabilidad | Eje X: Impacto</span>
+                </div>
+                <div class="card-body">
+                    <div class="matrix-container">
+                        <div class="matrix-header"></div>
+                        <div class="matrix-header">1. Insignificante</div>
+                        <div class="matrix-header">2. Menor</div>
+                        <div class="matrix-header">3. Dañino</div>
+                        <div class="matrix-header">4. Severo</div>
+                        <div class="matrix-header">5. Crítico</div>
+
+                        <div class="matrix-row-label">1. Raro</div>
+                        <div class="matrix-cell zone-B">B(1)<small>Baja</small></div>
+                        <div class="matrix-cell zone-B">B(2)<small>Baja</small></div>
+                        <div class="matrix-cell zone-M">M(3)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(4)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(5)<small>Moderada</small></div>
+
+                        <div class="matrix-row-label">2. Improbable</div>
+                        <div class="matrix-cell zone-B">B(2)<small>Baja</small></div>
+                        <div class="matrix-cell zone-M">M(4)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(6)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(8)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(10)<small>Moderada</small></div>
+
+                        <div class="matrix-row-label">3. Posible</div>
+                        <div class="matrix-cell zone-M">M(3)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(6)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-A">A(9)<small>Alta</small></div>
+                        <div class="matrix-cell zone-A">A(12)<small>Alta</small></div>
+                        <div class="matrix-cell zone-A">A(15)<small>Alta</small></div>
+
+                        <div class="matrix-row-label">4. Probable</div>
+                        <div class="matrix-cell zone-M">M(4)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(8)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-A">A(12)<small>Alta</small></div>
+                        <div class="matrix-cell zone-A">A(16)<small>Alta</small></div>
+                        <div class="matrix-cell zone-E">E(20)<small>Extrema</small></div>
+
+                        <div class="matrix-row-label">5. Casi Seguro</div>
+                        <div class="matrix-cell zone-M">M(5)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-M">M(10)<small>Moderada</small></div>
+                        <div class="matrix-cell zone-A">A(15)<small>Alta</small></div>
+                        <div class="matrix-cell zone-E">E(20)<small>Extrema</small></div>
+                        <div class="matrix-cell zone-E">E(25)<small>Extrema</small></div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="mb-3" style="color: var(--text-main);">Acciones según Zona de Riesgo:</h6>
+                        <div class="legend-container">
+                            <div class="legend-item">
+                                <span class="legend-badge zone-B">B</span> 
+                                <span class="legend-text"><strong>Zona de riesgo baja:</strong> Asumir el riesgo.</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-badge zone-M">M</span> 
+                                <span class="legend-text"><strong>Zona de riesgo moderada:</strong> Asumir el riesgo, evaluar, reducir el riesgo.</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-badge zone-A">A</span> 
+                                <span class="legend-text"><strong>Zona de riesgo alta:</strong> Reducir el riesgo, evitar, compartir o transferir.</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-badge zone-E">E</span> 
+                                <span class="legend-text"><strong>Zona de riesgo extrema:</strong> Reducir el riesgo, evitar, compartir o transferir (Prioridad Inmediata).</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+
+  # ----------------------------------------------------
+  # Servicio 1: MinIO (Almacenamiento de Objetos S3)
+  # ----------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: sadi_minio
+    command: server /data --address ":9009" --console-address ":9001"
+    restart: always
+    ports:
+      - "9003:9009"  # API S3 (Puerto interno para Python)
+      - "9001:9001"  # Consola Web (Para administración)
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    networks:
+      - iso-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9009/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ----------------------------------------------------
+  # Servicio 2: Base de Datos (PostgreSQL)
+  # ----------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - iso-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+
+  # ----------------------------------------------------
+  # Servicio 3: Aplicación Web (Flask)
+  # ----------------------------------------------------
+  web:
+    build: .
+    restart: always
+    ports:
+      # Bind a localhost por seguridad
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./app:/app
+      # Insumos y salidas del caso de demostracion (CSV, evidencias, PDF).
+      # seed_demo_sgsi.py lee de /data/demo y escribe alli las credenciales.
+      - ./data:/data
+    environment:
+      - FLASK_APP=main.py
+      - DEMO_DATA_DIR=/data/demo
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
+      # --- VARIABLES PARA MINIO / S3 ---
+      - S3_ENDPOINT=http://minio:9009
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - S3_BUCKET=sadi-evidencias
+      - S3_BUCKET_DOCS=sadi-documentacion
+
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+    networks:
+      - iso-network
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+
+# ----------------------------------------------------
+# Volúmenes y Redes Globales
+# ----------------------------------------------------
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  iso-network:
+    driver: bridge

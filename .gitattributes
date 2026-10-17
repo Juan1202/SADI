@@ -1,0 +1,18 @@
+# Normalizacion de fin de linea. Sin esto, Git convierte LF a CRLF tambien en
+# los binarios y corrompe los PDF y las imagenes al hacer checkout en Windows.
+* text=auto
+
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.docx binary
+*.xlsx binary
+*.xls  binary
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.yml  text eol=lf
+*.csv  text eol=lf

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .form-header {
+        background-color: var(--accent-color);
+        color: #000;
+        padding: 15px 20px;
+        border-radius: 12px 12px 0 0;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .form-section-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent-color);
+        font-weight: 700;
+        margin-bottom: 5px;
+        display: block;
+    }
+    .input-cyber-form {
+        background-color: rgba(255,255,255,0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        width: 100%; padding: 10px; border-radius: 6px;
+        font-size: 0.9rem; transition: 0.3s;
+    }
+    .input-cyber-form:focus {
+        border-color: var(--accent-color);
+        background-color: rgba(99,102,241,0.05);
+        outline: none;
+    }
+    .input-readonly {
+        background-color: rgba(0,0,0,0.2);
+        border-color: transparent;
+        cursor: not-allowed;
+        color: var(--text-muted);
+    }
+    .audit-context-bar {
+        background: rgba(99, 102, 241, 0.07);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 20px;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+    }
+    body.light-mode .input-cyber-form { background: #fff; border-color: #ced4da; color: #333; }
+    body.light-mode .input-readonly { background: #e9ecef; }
+    body.light-mode .audit-context-bar { background: #e8f5e9; border-color: #a5d6a7; color: #555; }
+    .remed-panel {
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        border-left: 4px solid var(--accent-color);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 24px;
+        background: rgba(99, 102, 241, 0.05);
+    }
+    .remed-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+    .remed-title { font-weight: 700; color: var(--text-main); font-size: 1rem; }
+    .remed-sub { font-size: 0.78rem; color: var(--text-muted); }
+    .remed-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .remed-chip { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+                  border: 1px solid var(--border-color); color: var(--text-main); }
+    .remed-chip strong { color: var(--accent-color); }
+    .remed-item { border-top: 1px dashed var(--border-color); padding: 8px 0; }
+    .remed-item summary { cursor: pointer; color: var(--text-main); font-size: 0.88rem; list-style: none; }
+    .remed-item summary::-webkit-details-marker { display: none; }
+    .remed-id { font-family: monospace; font-weight: 700; color: var(--accent-color); margin-right: 6px; }
+    .remed-tipo { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-left: 6px; }
+    .remed-texto { white-space: pre-line; font-size: 0.8rem; color: var(--text-muted); margin: 8px 0 0 0;
+                   padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; }
+    .remed-nota { font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; }
+    body.light-mode .remed-panel { background: #f4f5ff; }
+    body.light-mode .remed-texto { background: #eef0f6; color: #444; }
+</style>
+
+<div class="container-fluid pt-4 px-4 pb-5">
+
+    <div class="audit-context-bar">
+        <i class="fas fa-clipboard-check mr-2" style="color: var(--accent-color);"></i>
+        Auditoría: <strong>{{ evaluacion.codigo }}</strong>
+        {% if evaluacion.titulo %} — {{ evaluacion.titulo }}{% endif %}
+        <span class="ml-3 text-muted">|</span>
+        <span class="ml-3">Control: <strong>{{ control.codigo }}</strong> — {{ control.nombre }}</span>
+    </div>
+
+    <form method="POST">
+        <div class="card bg-surface border-0 shadow-lg" style="border-radius: 12px;">
+
+            <div class="form-header">
+                <h4 class="m-0 font-weight-bold"><i class="fas fa-clipboard-list mr-2"></i>Plan de Tratamiento de Riesgo</h4>
+                <a href="{{ url_for('auditoria.ver_evaluacion', id=evaluacion.id) }}"
+                   class="btn btn-sm btn-dark text-white border-0">
+                    <i class="fas fa-times"></i> Cerrar
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div class="row mb-4">
+                    <div class="col-md-2">
+                        <label class="form-section-label">Control</label>
+                        <input type="text" class="input-cyber-form input-readonly" value="{{ control.codigo }}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Nombre del Control</label>
+                        <input type="text" class="input-cyber-form input-readonly" value="{{ control.nombre }}" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-section-label">Código Riesgo (Auto)</label>
+                        <input type="text" class="input-cyber-form input-readonly"
+                               value="{{ plan.codigo_riesgo if plan else 'Generado al guardar…' }}" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-section-label">Estado Plan</label>
+                        <select name="estado" class="input-cyber-form">
+                            <option value="Abierto"     {% if plan and plan.estado == 'Abierto'     %}selected{% endif %}>Abierto</option>
+                            <option value="En Progreso" {% if plan and plan.estado == 'En Progreso' %}selected{% endif %}>En Progreso</option>
+                            <option value="Cerrado"     {% if plan and plan.estado == 'Cerrado'     %}selected{% endif %}>Cerrado</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% if plan and plan.estado == 'Cerrado' %}
+                <div class="alert alert-success py-2 mb-4" style="border-radius: 8px;">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Este plan está <strong>Cerrado</strong>. El riesgo de este control ya no bloquea la finalización de la auditoría.
+                    Puede reabrirlo cambiando el estado arriba.
+                </div>
+                {% endif %}
+
+                <hr style="border-color: var(--border-color);">
+
+                {% if sugerencia %}
+                <div class="remed-panel" id="panel-remediacion">
+                    <div class="remed-head">
+                        <div>
+                            <div class="remed-title"><i class="fas fa-magic mr-2" style="color: var(--accent-color);"></i>Sugerencias de remediación</div>
+                            <div class="remed-sub">Basadas en la correspondencia oficial ISO/IEC 27001:2022 ↔ NIST SP 800-53 Rev. 5 (NIST OLIR 155)</div>
+                        </div>
+                        {% if not sugerencia.sin_correspondencia %}
+                        <button type="button" class="btn btn-sm font-weight-bold" id="btn-aplicar-sugerencia"
+                                style="background: var(--accent-color); color: #000; border-radius: 20px;">
+                            <i class="fas fa-file-import mr-1"></i> Aplicar al plan
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    <div class="remed-chips">
+                        <span class="remed-chip">Zona <strong>{{ sugerencia.zona }}</strong> ({{ sugerencia.riesgo }})</span>
+                        <span class="remed-chip">Prioridad <strong>{{ sugerencia.prioridad }}</strong></span>
+                        <span class="remed-chip">Estrategias: <strong>{{ sugerencia.estrategias | join(' · ') }}</strong></span>
+                        <span class="remed-chip">Plazo sugerido <strong>{{ sugerencia.plazo_dias }} días</strong></span>
+                        <span class="remed-chip">Tipo de control <strong>{{ sugerencia.tipo_control_sugerido }}</strong></span>
+                    </div>
+
+                    {% if sugerencia.sin_correspondencia %}
+                    <div class="remed-nota">NIST no publica correspondencia para el control {{ sugerencia.control_iso }}. Defina las acciones con la guía de ISO/IEC 27002:2022.</div>
+                    {% else %}
+                    {% for s in sugerencia.sugerencias %}
+                    <details class="remed-item">
+                        <summary><span class="remed-id">{{ s.id }}</span>{{ s.titulo }}
+                            <span class="remed-tipo">{{ s.familia_es }} · {{ s.tipo_control }}</span></summary>
+                        <div class="remed-texto">{{ s.enunciado }}</div>
+                    </details>
+                    {% endfor %}
+                    <div class="remed-nota">
+                        Mostrando {{ sugerencia.sugerencias | length }} de {{ sugerencia.total_correspondencias }} controles NIST relacionados, del más específico al más general.
+                        Texto oficial de NIST (en inglés). Las correspondencias indican cobertura general, no equivalencia uno a uno: la decisión final es del auditor.
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-section-label">Descripción del Riesgo / Hallazgo</label>
+                        <textarea name="descripcion" class="input-cyber-form" rows="3"
+                                  placeholder="Describa qué podría fallar o qué falló…">{{ plan.descripcion_riesgo if plan else '' }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-section-label">Activos Relacionados</label>
+                        <textarea name="activos" class="input-cyber-form" rows="3"
+                                  placeholder="Servidores, Bases de Datos, Personal…">{{ plan.activos_relacionados if plan else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <label class="form-section-label">Nivel de Riesgo (1-25)</label>
+                        <input type="number" name="nivel_riesgo" class="input-cyber-form"
+                               value="{{ plan.nivel_riesgo_inicial if plan else resultado.nivel_riesgo_max | int }}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-section-label">Proceso de Negocio</label>
+                        <input type="text" name="proceso" class="input-cyber-form"
+                               placeholder="Ej: Gestión Financiera"
+                               value="{{ plan.proceso_negocio if plan else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Estrategia</label>
+                        <select name="estrategia" class="input-cyber-form">
+                            <option value="Mitigar"    {% if plan and plan.estrategia == 'Mitigar'    %}selected{% endif %}>Mitigar (Reducir)</option>
+                            <option value="Transferir" {% if plan and plan.estrategia == 'Transferir' %}selected{% endif %}>Transferir (Seguros/Terceros)</option>
+                            <option value="Aceptar"    {% if plan and plan.estrategia == 'Aceptar'    %}selected{% endif %}>Aceptar (Asumir)</option>
+                            <option value="Evitar"     {% if plan and plan.estrategia == 'Evitar'     %}selected{% endif %}>Evitar (Eliminar actividad)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label class="form-section-label">Acciones a Desarrollar (Tratamiento)</label>
+                        <textarea name="acciones" class="input-cyber-form" rows="4"
+                                  placeholder="Pasos detallados para tratar el riesgo…">{{ plan.acciones if plan else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-section-label">Tipo de Control</label>
+                        <select name="tipo_control" class="input-cyber-form">
+                            <option value="Preventivo" {% if plan and plan.tipo_control == 'Preventivo' %}selected{% endif %}>Preventivo</option>
+                            <option value="Detective"  {% if plan and plan.tipo_control == 'Detective'  %}selected{% endif %}>Detective</option>
+                            <option value="Correctivo" {% if plan and plan.tipo_control == 'Correctivo' %}selected{% endif %}>Correctivo</option>
+                            <option value="Disuasivo"  {% if plan and plan.tipo_control == 'Disuasivo'  %}selected{% endif %}>Disuasivo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Responsable</label>
+                        <input type="text" name="responsable" class="input-cyber-form"
+                               placeholder="Nombre o Cargo"
+                               value="{{ plan.responsable if plan else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-section-label">Plazo de Ejecución</label>
+                        <input type="date" name="plazo" class="input-cyber-form"
+                               value="{{ plan.plazo.strftime('%Y-%m-%d') if plan and plan.plazo else '' }}">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-transparent border-top border-secondary text-right p-3">
+                <a href="{{ url_for('auditoria.ver_evaluacion', id=evaluacion.id) }}"
+                   class="btn btn-outline-secondary mr-3" style="border-radius: 30px;">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-lg px-5 font-weight-bold"
+                        style="background: var(--accent-color); color: #000; border-radius: 30px; box-shadow: 0 0 15px rgba(99,102,241,0.3);">
+                    <i class="fas fa-save mr-2"></i> GUARDAR TRATAMIENTO
+                </button>
+            </div>
+
+        </div>
+    </form>
+</div>
+{% if sugerencia and not sugerencia.sin_correspondencia %}
+<script>
+(function () {
+    var boton = document.getElementById('btn-aplicar-sugerencia');
+    if (!boton) { return; }
+    var borrador = {{ borrador | tojson }};
+    var estrategia = {{ sugerencia.estrategia_sugerida | tojson }};
+    var tipo = {{ sugerencia.tipo_control_sugerido | tojson }};
+    var dias = {{ sugerencia.plazo_dias | tojson }};
+    boton.addEventListener('click', function () {
+        var acciones = document.querySelector('textarea[name="acciones"]');
+        acciones.value = acciones.value.trim() ? acciones.value.trim() + '\n\n' + borrador : borrador;
+        document.querySelector('select[name="estrategia"]').value = estrategia;
+        document.querySelector('select[name="tipo_control"]').value = tipo;
+        var plazo = document.querySelector('input[name="plazo"]');
+        if (!plazo.value) {
+            var f = new Date();
+            f.setDate(f.getDate() + dias);
+            plazo.value = f.toISOString().slice(0, 10);
+        }
+        acciones.focus();
+        boton.disabled = true;
+        boton.innerHTML = '<i class="fas fa-check mr-1"></i> Aplicada — revise y guarde';
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

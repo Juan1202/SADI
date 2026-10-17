@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1 class="display-1 text-danger">403</h1>
+    <h2>Acceso Denegado</h2>
+    <p class="lead">No tienes permisos para acceder a esta sección.</p>
+    <a href="{{ url_for('dashboard.home') }}" class="btn btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

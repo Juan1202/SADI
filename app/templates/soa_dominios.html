@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Estilos Base */
+    .domain-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 16px; 
+        padding: 40px 20px; 
+        text-align: center;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer; 
+        height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .domain-card:hover {
+        border-color: var(--accent-color);
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
+        transform: translateY(-5px);
+    }
+    
+    .domain-icon { font-size: 3.5rem; margin-bottom: 20px; transition: 0.3s; opacity: 0.9; }
+    .domain-title { font-weight: 800; margin-bottom: 5px; color: var(--text-main); font-size: 1.4rem; }
+    .domain-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Colores Específicos por Dominio (Adaptables) */
+    .icon-org { color: #17a2b8; }
+    .icon-per { color: #ffc107; }
+    .icon-fis { color: #ff4d4d; }
+    .icon-tec { color: #4f46e5; }
+
+    /* LIGHT MODE */
+    body.light-mode .domain-card { background: #fff; border-color: #e0e0e0; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+    body.light-mode .domain-title { color: #2c3e50; }
+    body.light-mode .domain-sub { color: #666; }
+    /* Iconos más oscuros para contraste en blanco */
+    body.light-mode .icon-org { color: #007bff; }
+    body.light-mode .icon-per { color: #d39e00; }
+    body.light-mode .icon-fis { color: #dc3545; }
+    body.light-mode .icon-tec { color: #198754; }
+
+</style>
+
+<div class="container-fluid pt-4 px-4">
+    <div class="d-flex align-items-center mb-5">
+        <a href="{{ url_for('documentos.vista_documentos') }}" class="btn btn-outline-secondary mr-3 rounded-circle" style="width: 40px; height: 40px; display: grid; place-items: center;"><i class="fas fa-arrow-left"></i></a>
+        <div>
+            <h2 class="font-weight-bold m-0" style="color: var(--text-main);">Editando SoA: <span style="color: var(--accent-color);">{{ soa.codigo }}</span></h2>
+            <p class="text-muted m-0">Seleccione un dominio para definir la aplicabilidad de los controles.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="domain-card" onclick="window.location.href='{{ url_for('documentos.editar_soa_dominio', id=soa.id, dominio='Organizacional') }}'">
+                <i class="fas fa-sitemap domain-icon icon-org"></i>
+                <h4 class="domain-title">Organizacional</h4>
+                <small class="domain-sub">Políticas, Roles, Gestión</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="domain-card" onclick="window.location.href='{{ url_for('documentos.editar_soa_dominio', id=soa.id, dominio='Personas') }}'">
+                <i class="fas fa-users domain-icon icon-per"></i>
+                <h4 class="domain-title">Personas</h4>
+                <small class="domain-sub">RRHH, Concienciación</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="domain-card" onclick="window.location.href='{{ url_for('documentos.editar_soa_dominio', id=soa.id, dominio='Físico') }}'">
+                <i class="fas fa-door-closed domain-icon icon-fis"></i>
+                <h4 class="domain-title">Físico</h4>
+                <small class="domain-sub">Accesos, Perímetros, Equipos</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="domain-card" onclick="window.location.href='{{ url_for('documentos.editar_soa_dominio', id=soa.id, dominio='Tecnológico') }}'">
+                <i class="fas fa-server domain-icon icon-tec"></i>
+                <h4 class="domain-title">Tecnológico</h4>
+                <small class="domain-sub">Ciberseguridad, Redes, Crypto</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

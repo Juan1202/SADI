@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid pt-4 px-4">
+    <div class="mb-4">
+        <h2 style="color: var(--accent-color); font-weight: 800; text-transform: uppercase;">
+            <i class="fas fa-biohazard mr-2"></i>Análisis y Tratamiento de Riesgos
+        </h2>
+        <p class="text-muted">Gestión de controles con nivel de riesgo Alto o Extremo detectados en auditorías.</p>
+    </div>
+
+    <div class="card bg-surface border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead style="background: rgba(0,0,0,0.2);">
+                    <tr>
+                        <th class="pl-4">CONTROL</th>
+                        <th>NOMBRE</th>
+                        <th>AUDITORÍA</th>
+                        <th class="text-center">NIVEL RIESGO</th>
+                        <th class="text-center">ESTADO TRATAMIENTO</th>
+                        <th class="text-center">ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in riesgos %}
+                    <tr>
+                        <td class="pl-4"><span class="badge border border-secondary text-muted">{{ item.control.codigo }}</span></td>
+                        <td class="font-weight-bold">{{ item.control.nombre }}</td>
+                        <td>
+                            <a href="{{ url_for('auditoria.ver_evaluacion', id=item.evaluacion.id) }}"
+                               class="text-muted" style="text-decoration: underline dotted;">
+                                {{ item.evaluacion.codigo }}
+                            </a>
+                            <small class="d-block text-muted">{{ item.evaluacion.estado }}</small>
+                        </td>
+
+                        <td class="text-center">
+    {% if item.nivel_max >= 20 %}
+        <span class="badge badge-danger px-3 py-2">EXTREMO ({{ item.nivel_max }})</span>
+    {% elif item.nivel_max >= 9 %}
+        <span class="badge badge-warning px-3 py-2 text-dark">ALTO ({{ item.nivel_max }})</span>
+    {% elif item.nivel_max == 0 %}
+        <span class="badge badge-info px-3 py-2">PENDIENTE CÁLCULO</span>
+    {% else %}
+        <span class="badge badge-success px-3 py-2">BAJO ({{ item.nivel_max }})</span>
+    {% endif %}
+</td>
+
+                        <td class="text-center">
+                            {% if item.plan_existente %}
+                                <span class="badge bg-info text-dark">
+                                    <i class="fas fa-cog fa-spin mr-1"></i> {{ item.plan_existente.estado }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">Pendiente</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{{ url_for('riesgos.tratar_riesgo_auditoria', resultado_id=item.resultado.id) }}" 
+                               class="btn btn-sm btn-outline-primary font-weight-bold" 
+                               style="border-radius: 20px; border-color: var(--accent-color); color: var(--text-main);">
+                                <i class="fas fa-file-medical mr-1" style="color: var(--accent-color);"></i> 
+                                {% if item.plan_existente %}Editar Plan{% else %}Iniciar Plan{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-muted">¡Excelente! No se detectaron controles con riesgo crítico pendiente.</h5>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
